@@ -73,11 +73,7 @@ static int program (int argc , char ** argv )
    // provoke SEH in /kernel builds
    vs.at(0xFF);
 
-// std::out_of_range is indeed thrown from here
-//    auto s = vs.at(22);
-//    return int( s.size() ) ;
-
-// but lets try legal usage
+// lets try some legal usage
    std::cout << "\n cmd line arguments are" ;
    for ( auto const & str_  : vs )
    {
@@ -99,11 +95,15 @@ int main (int argc, char ** argv)
         /* returns 1 aka EXCEPTION_EXECUTE_HANDLER */
       ) 
     { 
-        // this says "not exnough space", if it happens
-        // this is not happening on every program run?
+        // MS STL "throws" are caught here
+        // as now they are SEH
         perror( APP_NAME "SEH Exception caught");
         
-        puts( dump_last_run.finished_ok == TRUE ? "minidump creation succeeded" : "minidump creation failed" );
+        puts( dump_last_run.finished_ok == TRUE 
+        ? "minidump creation succeeded" 
+        : "minidump creation failed" 
+        );
+
         if ( dump_last_run.finished_ok ) {
             puts(dump_last_run.dump_folder_name);
             puts(dump_last_run.dump_file_name );
@@ -121,7 +121,7 @@ ISSUES
 It seems Bjarne has expressed explicit dislike for MSFT SEH
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf
 
-It seems bellow is a grouping of all SEH raising 6 functions, existing in MS STL.
+It also seems bellow is a grouping of all SEH raising 6 functions, existing in MS STL.
 
 <xutility> #5817
 
@@ -143,12 +143,11 @@ This is how that mechanism works (as an example ) :
 */
 namespace my {
     inline namespace constants {
-        enum error_type { // identify error
-        error_collate,
+        enum error_type { 
         error_ctype,
         error_syntax
     };
-} // namespace constants
+    } // namespace constants
 
 struct error final 
 { 
@@ -197,9 +196,7 @@ _THROW(x) x._Raise()
 with _Raise() in <exception> #186, on /kernel version of std::exception for _NO_EXCEPTION builds
 
 */  
-
-       constants::error_type err_ ;
-
+    constants::error_type err_ ;
 } ; // error
 
 [[noreturn]] inline void __cdecl 
@@ -212,6 +209,7 @@ with _Raise() in <exception> #186, on /kernel version of std::exception for _NO_
 The mythical (MS STL)"CORE". First mentioned here (by Billy O Neal) :
 https://devblogs.microsoft.com/cppblog/stl-features-and-fixes-in-vs-2017-15-8/
 
+<citation>
 The header structure of the STL was changed to allow use of a subset of the library in 
 conditions where the user can’t link with msvcp140.dll, such as driver development. 
 (Previously the hard dependency on msvcp and pragma detect mismatch were injected by our 
@@ -227,9 +225,5 @@ some form of CRT headers are present):
 
 We aren’t actually driver developers ourselves and are interested in feedback
  in this area if there are things we can do to make these more usable in constrained environments.
+ </citation>
 */
-#include <cstddef>
-#include <cstdlib>
-#include <initializer_list>
-#include <ratio>
-#include <type_traits>
