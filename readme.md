@@ -3,7 +3,7 @@
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
-What seems to be the issue? The issue seems to be it is undocumented how to use MS STL with cl, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
+What seems to be the issue? The issue seems to be it is largely undocumented how to use MS STL with cl, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
 
 I am using this little project to approve or disapprove my doubts. On the official side, things are happening around this issue, albeit not that quickly:
 
