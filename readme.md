@@ -1,6 +1,5 @@
 
-# DBJ*Playground
-## MS STL + /kernel builds
+# MS STL + cl /kernel builds
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
