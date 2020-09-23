@@ -1,6 +1,3 @@
-#define dbg(x) std::cout << "\n" << std::setw(24) << #x << " : " << (x) 
-
-#define APP_NAME "DBJ_KERNEL [" __DATE__ "] "
 /*
 (c) 2020 by dbj@dbj.org -- LICENSE_DBJ
 
@@ -16,6 +13,7 @@ Why not? Because the linker has this problem?
 main.obj : error LNK2019: unresolved external symbol _CrtDbgReport referenced in function 
 "void * __cdecl std::_Allocate_manually_vector_aligned<struct std::_Default_allocate_traits>(unsigned __int64)" (??$_Allocate_manually_vector_aligned@U_Default_allocate_traits@std@@@std@@YAPEAX_K@Z)
 */
+#include "top.h"
 
 #include "crt_sampling.h"
 #include "generate_dump.h"
@@ -98,7 +96,7 @@ int main (int argc, char ** argv)
     { 
         // MS STL "throws" are caught here
         // as now they are SEH
-        perror( APP_NAME "SEH Exception caught");
+        perror( DBJ_APP_NAME " -- SEH Exception caught");
         
         puts( dump_last_run.finished_ok == TRUE 
         ? "minidump creation succeeded" 
@@ -111,7 +109,7 @@ int main (int argc, char ** argv)
         }
     } 
         puts( "\n\n");
-        puts( APP_NAME "\nLeaving...\n");
+        puts( DBJ_APP_NAME " -- Leaving...");
         return 42;
 }
 /*

@@ -1,4 +1,7 @@
 #pragma once
+
+#include "top.h"
+
 /*
 
 Taken from: https://docs.microsoft.com/en-us/windows/win32/dxtecharts/crash-dump-analysis
@@ -57,8 +60,8 @@ static inline int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 
     char  szPath[MAX_PATH] = {0}; 
     char  szFileName[MAX_PATH] = {0}; 
-    char * szAppName = "DBJ_KERNEL";
-    char * szVersion = "v1.0";
+    const char * szAppName = DBJ_APP_NAME;
+    const char * szVersion = DBJ_APP_VERSION;
     DWORD dwBufferSize = MAX_PATH;
     HANDLE hDumpFile = 0 ;
     SYSTEMTIME stLocalTime;
