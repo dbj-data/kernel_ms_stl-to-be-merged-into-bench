@@ -1,7 +1,6 @@
-#include <iostream>
-#include <iomanip>
 #define dbg(x) std::cout << "\n" << std::setw(24) << #x << " : " << (x) 
 
+#define APP_NAME "DBJ_KERNEL [" __DATE__ "] "
 /*
 (c) 2020 by dbj@dbj.org -- LICENSE_DBJ
 
@@ -18,11 +17,11 @@ main.obj : error LNK2019: unresolved external symbol _CrtDbgReport referenced in
 "void * __cdecl std::_Allocate_manually_vector_aligned<struct std::_Default_allocate_traits>(unsigned __int64)" (??$_Allocate_manually_vector_aligned@U_Default_allocate_traits@std@@@std@@YAPEAX_K@Z)
 */
 
+#include "crt_sampling.h"
 #include "generate_dump.h"
+#include <iostream>
+#include <iomanip>
 #include <stdlib.h>
-
-#define APP_NAME "DBJ_KERNEL [" __DATE__ "] "
-
 #include <vector>
 #include <string>
 #include <new.h>
@@ -68,10 +67,12 @@ void operator delete  ( void* ptr, my::align_val_t al ) noexcept {free(ptr); }
 // --------------------------------------------------------------------------
 static int program (int argc , char ** argv ) 
 {
+   crt_sample_one(argc,argv);
+
    std::vector< std::string > vs { argv + 1 , argv + argc } ;
 
    // provoke SEH in /kernel builds
-   vs.at(0xFF);
+   // vs.at(0xFF);
 
 // lets try some legal usage
    std::cout << "\n cmd line arguments are" ;
