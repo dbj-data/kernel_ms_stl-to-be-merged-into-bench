@@ -24,11 +24,12 @@
         },
         {
             "type": "shell",
-            "label": "C/C++: cl.exe build active file",
+            "label": "RELEASE_BUILD",
             "command": "cl.exe",
             "args": [
+                "/DNDEBUG",
                 "/Zi",
-                "/EHsc",
+                "/kernel",
                 "/Fe:",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "${file}"
