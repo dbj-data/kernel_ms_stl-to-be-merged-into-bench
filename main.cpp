@@ -30,7 +30,10 @@ main.obj : error LNK2019: unresolved external symbol _CrtDbgReport referenced in
 
 /*
 
-Is this for C++ exceptions, for SEH or for both?
+Is this for C++ exceptions, for SE or for both?
+This is for C++ exceptions and NOT for SE
+Thus perhaps it should be called: _HAS_CPP_EXCEPTIONS
+There is _CPPUNWIND already
 
 <vcruntime.h> #100
 
@@ -41,6 +44,9 @@ Is this for C++ exceptions, for SEH or for both?
         #define _HAS_EXCEPTIONS 1
     #endif // _KERNEL_MODE 
 #endif // _HAS_EXCEPTIONS 
+
+I suggest:
+#define _HAS_CPP_EXCEPTIONS _HAS_EXCEPTIONS
 
 */
 
@@ -87,8 +93,6 @@ static int program (int argc , char ** argv )
 //        catch (std::exception const & sex) {
 //          dbg(sex.what());
 //  }
-
-
 }
 // --------------------------------------------------------------------------
 // destructors also work in /kernel builds
