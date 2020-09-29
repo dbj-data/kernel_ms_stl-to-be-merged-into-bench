@@ -14,6 +14,7 @@ main.obj : error LNK2019: unresolved external symbol _CrtDbgReport referenced in
 "void * __cdecl std::_Allocate_manually_vector_aligned<struct std::_Default_allocate_traits>(unsigned __int64)" (??$_Allocate_manually_vector_aligned@U_Default_allocate_traits@std@@@std@@YAPEAX_K@Z)
 */
 #include "top.h"
+#include "show_predefined_cl_macros.h"
 
 #include "crt_sampling.h"
 #include "generate_dump.h"
@@ -23,9 +24,12 @@ main.obj : error LNK2019: unresolved external symbol _CrtDbgReport referenced in
 #include <vector>
 #include <string>
 #include <new.h>
+#include <comdef.h>
 
 // --------------------------------------------------------------------------
+
 /*
+
 Is this for C++ exceptions, for SEH or for both?
 
 <vcruntime.h> #100
@@ -39,9 +43,14 @@ Is this for C++ exceptions, for SEH or for both?
 #endif // _HAS_EXCEPTIONS 
 
 */
+
 static_assert( _HAS_EXCEPTIONS == 0 ,
- __FILE__ "(" _CRT_STRINGIZE(__LINE__) ") : _HAS_EXCEPTIONS should be 0 as _KERNEL_MODE should be defined?" 
+ __FILE__ "(" _CRT_STRINGIZE(__LINE__) ") : _HAS_EXCEPTIONS should be 0 as _KERNEL_MODE is defined?" 
  ) ;
+
+#ifdef _CPPUNWIND
+#error __FILE__ " _CPPUNWIND should be undefined as _KERNEL_MODE is defined?" 
+#endif
 
 // --------------------------------------------------------------------------
 // optional
@@ -67,20 +76,19 @@ void operator delete  ( void* ptr, my::align_val_t al ) noexcept {free(ptr); }
 // --------------------------------------------------------------------------
 static int program (int argc , char ** argv ) 
 {
-   crt_sample_one(argc,argv);
+// error C2980: C++ exception handling is not supported with /kernel
+// try {
+#ifdef _KERNEL_MODE
+   // this throws SE in da _KERNEL_MODE
+   // and C++ exception otherwise
+   _com_raise_error( S_OK ) ;
+#endif
+//  }
+//        catch (std::exception const & sex) {
+//          dbg(sex.what());
+//  }
 
-   std::vector< std::string > vs { argv + 1 , argv + argc } ;
 
-   // provoke SEH in /kernel builds
-   // vs.at(0xFF);
-
-// lets try some legal usage
-   std::cout << "\n cmd line arguments are" ;
-   for ( auto const & str_  : vs )
-   {
-      dbg(str_);
-   }
-   return 0;
 }
 // --------------------------------------------------------------------------
 // destructors also work in /kernel builds
@@ -111,7 +119,7 @@ int main (int argc, char ** argv)
         __try {
         std::set_new_handler(my_handler);
         errno = 0 ;
-        program(argc,argv);
+            program(argc, argv);
         }
         __finally {
             puts("\n");
