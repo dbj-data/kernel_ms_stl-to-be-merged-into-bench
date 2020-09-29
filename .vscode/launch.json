@@ -8,13 +8,13 @@
             "name": "Build and debug active file",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+            "program": "${workspaceFolder}\\kernel_dbj_dbg.exe",
             "args": ["one", "two", "three"],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
-            "preLaunchTask": "KERNEL_DEBUG"
+            "preLaunchTask": "DEBUG_KERNEL"
         }
     ]
 }

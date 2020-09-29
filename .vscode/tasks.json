@@ -3,7 +3,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "KERNEL_DEBUG",
+            "label": "DEBUG_KERNEL",
             "command": "cl.exe",
             "args": [
                 "/D_DEBUG",
@@ -11,8 +11,10 @@
                 "/kernel",
                 "/Zi",
                 "/Fe:",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${file}"
+                "${workspaceFolder}\\kernel_dbj_dbg.exe",
+                "${workspaceFolder}\\program.cpp",
+                "${workspaceFolder}\\algo\\well.c",
+                "${workspaceFolder}\\fwk\\main.cpp"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -31,8 +33,10 @@
                 "/Zi",
                 "/kernel",
                 "/Fe:",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${file}"
+                "${workspaceFolder}\\kernel_dbj.exe",
+                "${workspaceFolder}\\program.cpp",
+                "${workspaceFolder}\\algo\\well.c",
+                "${workspaceFolder}\\fwk\\main.cpp"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
