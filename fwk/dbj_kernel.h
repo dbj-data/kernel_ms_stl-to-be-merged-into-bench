@@ -60,9 +60,9 @@ Policy is very simple:
 use /kernel switch
 do not use any /EH switch
 have only one top level function as bellow to catch SE
-generate minidump if SE it caught
+generate minidump if SE is raised / caught
 
-ps: can any one decipher these remarks bellow, fully?
+ps: can somebody decipher these remarks bellow, fully?
 https://docs.microsoft.com/en-us/cpp/build/reference/eh-exception-handling-model?view=vs-2019#default-exception-handling-behavior
 */
 extern "C" static int dbj_main (int argc, char ** argv) 
