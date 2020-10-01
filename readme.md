@@ -33,6 +33,8 @@ To open that file you need **Visual Studio**. After which in the upper right cor
 
 ## 1.2. Thoughts and Issues
 
+Prpbably the best page on MS Docs on the subject of SEH vs standard C++ is [here](https://docs.microsoft.com/en-us/cpp/build/reference/eh-exception-handling-model?view=vs-2019#default-exception-handling-behavior). If needed, please read and understand before proceeding.
+
 ### 1.2.1. Bjarne and SEH
 
 It seems (at least to me) Bjarne has expressed explicit dislike for MSFT SEH
