@@ -1,5 +1,5 @@
 
-# 1. MS STL + cl /kernel builds
+# 1. C++, cl and the /kernel builds
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
@@ -11,9 +11,10 @@
     - [1.2.3. SEH friendly C++](#123-seh-friendly-c)
     - [1.2.4. The mythical (MS STL)"CORE"](#124-the-mythical-ms-stlcore)
 
-What seems to be the issue? The issue seems to be it is largely undocumented how to use MS STL with cl, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
 
-I am using this little project to approve or disapprove my doubts. On the official side, things are happening around this issue, albeit not that quickly:
+What seems to be the issue? The issue seems to be it is not clearly documented how to use MS STL, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
+
+I am using this little project to approve or disapprove your doubts. On the official side, things are happening around this issue:
 
 - https://github.com/microsoft/STL/issues/1289
 - https://github.com/microsoft/STL/issues/639
@@ -32,6 +33,8 @@ If SEH exception is thrown that is caught in main, and "minidump" dmp file is cr
 To open that file you need **Visual Studio**. After which in the upper right corner like "smallish windows" you will spot the link to native debugging. Click on that and soon you will be jumped to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
 
 ## 1.2. Thoughts and Issues
+
+Prpbably the best page on MS Docs on the subject of SEH vs standard C++ is [here](https://docs.microsoft.com/en-us/cpp/build/reference/eh-exception-handling-model?view=vs-2019#default-exception-handling-behavior). If needed, please read and understand before proceeding.
 
 ### 1.2.1. Bjarne and SEH
 
@@ -160,6 +163,10 @@ We aren’t actually driver developers ourselves and are interested in feedback
  \<end citation>
 
  Is there still such a thing as "MS STL Core"? If not is it on the roadmap? Is this going to be a MS STL part that will work with the new /kernel- switch variant, I first noticed 2020SEP28 published on-line?
+ 
+ ### 1.2.5
+ 
+ COM, C++ and /kernel builds. When attempting C++ /kernel builds, right now things are happening in there "by accident". Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
 
 
 
