@@ -1,6 +1,8 @@
 /*
-(c) 2020 by dbj@dbj.org -- LICENSE_DBJ
-Kkernel switch, what is that?
+(c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
+
+Kernel switch, what is that?
+
 */
 
 #include "nanoclib/nanoclib.h"
