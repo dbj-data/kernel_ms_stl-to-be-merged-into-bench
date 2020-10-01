@@ -7,8 +7,8 @@
             "command": "cl.exe",
             "args": [
                 "/D_DEBUG",
-                "/MTd",
-                "/kernel", "/EHs", "/EHr",
+                "/MDd",
+                "/kernel",
                 "/Zi",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj_dbg.exe",
@@ -30,8 +30,8 @@
             "command": "cl.exe",
             "args": [
                 "/DNDEBUG",
-                "/Zi",
-                "/kernel", "/EHs", "/EHr",
+                "/MD",
+                "/kernel",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj.exe",
                 "${workspaceFolder}\\program.cpp",

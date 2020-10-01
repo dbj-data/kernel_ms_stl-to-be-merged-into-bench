@@ -26,11 +26,11 @@ Findings and thoughts are in the main.cpp. In comment or snippets and samples. W
 
 Of course this is strictly Windows code. This is **VS Code** project. 
 
-If you are reading this it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. For release builds there is also build.cmd . It calls clean.cmd, you can use on its own too.
+If you are reading this it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. There is also clean.cmd, hint: it clears the cruft left after the builds.
 
-You can put your code in the program.cpp. `extern "C" int program (int argc , char ** argv )` is where the user code starts. 
+You can put your own code in the program.cpp. `extern "C" int program (int argc , char ** argv )` is where the user code starts. 
 
-If SEH exception is raised that is caught in main, and "minidump" dmp file is created. You are informed where, and what is the full path.
+If SEH exception is raised that is caught in `dbj_main`, and "minidump" dmp file is created. You are informed where is it, and what is the full path. SEH is intrinsic to Windows and CL.exe. Thus that `dbj_main` always works and catches all potential SE's.
 
 To open that file you need **Visual Studio**. After which in the upper right corner like "smallish windows" you will spot the link to native debugging. Click on that and soon you will be jumped to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
 

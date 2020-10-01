@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma message(" ")
-#pragma message("Predefine macros status")
+#pragma message("Predefined macros states")
 #pragma message(" ")
 
 

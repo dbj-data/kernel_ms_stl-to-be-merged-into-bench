@@ -26,10 +26,6 @@ Is this for C++ exceptions, for SEH or for both?
 #endif // _HAS_EXCEPTIONS 
 
 */
-static_assert( _HAS_EXCEPTIONS == 0 ,
- __FILE__ "(" _CRT_STRINGIZE(__LINE__) ") : _HAS_EXCEPTIONS should be 0 as _KERNEL_MODE should be defined?" 
- ) ;
-
 // --------------------------------------------------------------------------
 // optional
 void my_handler() noexcept 
@@ -73,10 +69,7 @@ extern "C" static int dbj_main (int argc, char ** argv)
         __try {
         std::set_new_handler(my_handler);
         errno = 0 ;
-        // I hate them hacks but this one perhaps not
-        // for WIN10 cmd.exe VT100 to be switched on
-        system(" "); 
-            DBJ_INFO( DBJ_APP_NAME " " DBJ_APP_VERSION );
+            DBJ_INFO( DBJ_APP_NAME ": " DBJ_APP_VERSION );
                 program(argc,argv);
         }
         __finally {
@@ -90,20 +83,19 @@ extern "C" static int dbj_main (int argc, char ** argv)
     { 
         // MS STL "throws" are raised SE's under /kernel builds
         // caught here and nowhere else in the app
-         DBJ_INFO( DBJ_APP_NAME ": SEH Exception caught");
+         DBJ_ERROR( DBJ_APP_NAME ": SEH Exception caught");
         
-        DBJ_INFO( "%s", 
+        DBJ_WARN( DBJ_APP_NAME ": %s", 
 ( dump_last_run.finished_ok == TRUE ? "minidump creation succeeded" : "minidump creation failed" ) 
         );
 
         if ( dump_last_run.finished_ok ) {
-            DBJ_INFO( "Dump folder: %s", dump_last_run.dump_folder_name );
-            DBJ_INFO( "Dump file  : %s", dump_last_run.dump_file_name);
+            DBJ_INFO( DBJ_APP_NAME ": Dump folder: %s", dump_last_run.dump_folder_name );
+            DBJ_INFO( DBJ_APP_NAME ": Dump file  : %s", dump_last_run.dump_file_name);
         }
-         DBJ_INFO( "Open the minidump in Visual Studio...");
+         DBJ_INFO( DBJ_APP_NAME ": Open the minidump in Visual Studio...");
 
     } 
         DBJ_INFO( DBJ_APP_NAME ": Leaving...");
-        system("@pause");
         return 42;
 } // main

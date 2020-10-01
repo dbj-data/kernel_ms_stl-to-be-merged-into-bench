@@ -3,7 +3,6 @@
 //
 @del /s *.obj >NUL
 @del /s *.ilk >NUL
-@del /s *.out >NUL
 @IF [%1] == [] GOTO script_exit
 @del /s *.exe >NUL
 @del /s *.pdb >NUL
