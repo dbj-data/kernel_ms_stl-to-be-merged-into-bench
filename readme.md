@@ -1,5 +1,5 @@
 
-# 1. MS STL + cl /kernel builds
+# 1. C++, cl and the /kernel builds
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
