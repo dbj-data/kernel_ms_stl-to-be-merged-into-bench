@@ -13,7 +13,7 @@
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj_dbg.exe",
                 "${workspaceFolder}\\program.cpp",
-                "${workspaceFolder}\\algo\\well.c",
+                "${workspaceFolder}\\pseudo_random\\well.c",
                 "${workspaceFolder}\\fwk\\main.cpp"
             ],
             "options": {
@@ -35,7 +35,7 @@
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj.exe",
                 "${workspaceFolder}\\program.cpp",
-                "${workspaceFolder}\\algo\\well.c",
+                "${workspaceFolder}\\pseudo_random\\well.c",
                 "${workspaceFolder}\\fwk\\main.cpp"
             ],
             "options": {

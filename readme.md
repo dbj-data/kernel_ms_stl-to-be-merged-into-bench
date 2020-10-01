@@ -3,13 +3,13 @@
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
-- [1. MS STL + cl /kernel builds](#1-ms-stl--cl-kernel-builds)
+- [1. C++, cl and the /kernel builds](#1-c-cl-and-the-kernel-builds)
   - [1.1. Usage](#11-usage)
   - [1.2. Thoughts and Issues](#12-thoughts-and-issues)
     - [1.2.1. Bjarne and SEH](#121-bjarne-and-seh)
     - [1.2.2. MS STL and SEH](#122-ms-stl-and-seh)
     - [1.2.3. SEH friendly C++](#123-seh-friendly-c)
-    - [1.2.4. The mythical (MS STL)"CORE"](#124-the-mythical-ms-stlcore)
+    - [1.2.4. COM, C++ and /kernel builds](#124-com-c-and-kernel-builds)
 
 
 What seems to be the issue? The issue seems to be it is not clearly documented how to use MS STL, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
@@ -24,11 +24,13 @@ Findings and thoughts are in the main.cpp. In comment or snippets and samples. W
 
 ## 1.1. Usage
 
-Of course this is strictly Windows code. This is **VS Code** project. For debug builds make sure main.cpp is the current file in your VS Code, and then do (Ctrl+Shit+D) or click on the Debug icon on the left side toolbar, to actually start debugging. That action will first (and always) do the  debug build. 
+Of course this is strictly Windows code. This is **VS Code** project. 
 
-If you are reading this it is safe to assume you know how to use VS Code to do C++ builds. For release builds there is build.cmd . It calls clean.cmd, you can use on its own too.
+If you are reading this it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. For release builds there is also build.cmd . It calls clean.cmd, you can use on its own too.
 
-If SEH exception is thrown that is caught in main, and "minidump" dmp file is created. You are informed where, and what is the full path.
+You can put your code in the program.cpp. `extern "C" int program (int argc , char ** argv )` is where the user code starts. 
+
+If SEH exception is raised that is caught in main, and "minidump" dmp file is created. You are informed where, and what is the full path.
 
 To open that file you need **Visual Studio**. After which in the upper right corner like "smallish windows" you will spot the link to native debugging. Click on that and soon you will be jumped to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
 
@@ -133,7 +135,8 @@ There is always a function that does not return. A level of indirection to impro
 } // my
 ```
 
-### 1.2.4. The mythical (MS STL)"CORE"
+<!-- 
+ 1.2.4. The mythical (MS STL)"CORE"
 
 First mentioned here (by Billy O Neal) :
 https://devblogs.microsoft.com/cppblog/stl-features-and-fixes-in-vs-2017-15-8/
@@ -161,12 +164,13 @@ We aren’t actually driver developers ourselves and are interested in feedback
  </i>
 
  \<end citation>
+ -->
 
  Is there still such a thing as "MS STL Core"? If not is it on the roadmap? Is this going to be a MS STL part that will work with the new /kernel- switch variant, I first noticed 2020SEP28 published on-line?
  
- ### 1.2.5
+ ### 1.2.4. COM, C++ and /kernel builds
  
- COM, C++ and /kernel builds. When attempting C++ /kernel builds, right now things are happening in there "by accident". Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
+  When attempting C++ /kernel builds, right now [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
 
 
 
