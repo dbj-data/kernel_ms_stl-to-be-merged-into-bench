@@ -8,7 +8,7 @@
             "args": [
                 "/D_DEBUG",
                 "/MTd",
-                "/kernel",
+                "/kernel", "/EHs", "/EHr",
                 "/Zi",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj_dbg.exe",
@@ -31,7 +31,7 @@
             "args": [
                 "/DNDEBUG",
                 "/Zi",
-                "/kernel",
+                "/kernel", "/EHs", "/EHr",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj.exe",
                 "${workspaceFolder}\\program.cpp",

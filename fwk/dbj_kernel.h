@@ -4,7 +4,8 @@ whatever /kernel build needs or might need
 */
 #include "macros.h"
 #include "generate_dump.h"
-#include "vt100win10.h"
+#include "../nanoclib/vt100.h"
+#include "../nanoclib/nanoclib.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -72,12 +73,14 @@ extern "C" static int dbj_main (int argc, char ** argv)
         __try {
         std::set_new_handler(my_handler);
         errno = 0 ;
-        system(" "); // hack for WIN10 cmd.exe VT100 switch on
-            DBJ_PROMPT( DBJ_APP_NAME " " DBJ_APP_VERSION );
+        // I hate them hacks but this one perhaps not
+        // for WIN10 cmd.exe VT100 to be switched on
+        system(" "); 
+            DBJ_INFO( DBJ_APP_NAME " " DBJ_APP_VERSION );
                 program(argc,argv);
         }
         __finally {
-            DBJ_PROMPT( DBJ_APP_NAME ":  __finally block visited");
+            DBJ_INFO( DBJ_APP_NAME ":  __finally block visited");
         }
     }
     __except ( 
@@ -85,23 +88,22 @@ extern "C" static int dbj_main (int argc, char ** argv)
         /* returns 1 aka EXCEPTION_EXECUTE_HANDLER */
       ) 
     { 
-        // MS STL "throws" are caught here
-        // as now they are SEH
-         DBJ_PROMPT( DBJ_APP_NAME ": SEH Exception caught");
+        // MS STL "throws" are raised SE's under /kernel builds
+        // caught here and nowhere else in the app
+         DBJ_INFO( DBJ_APP_NAME ": SEH Exception caught");
         
-        DBJ_PROMPT( dump_last_run.finished_ok == TRUE 
-        ? "minidump creation succeeded" 
-        : "minidump creation failed"  
+        DBJ_INFO( "%s", 
+( dump_last_run.finished_ok == TRUE ? "minidump creation succeeded" : "minidump creation failed" ) 
         );
 
         if ( dump_last_run.finished_ok ) {
-            DBJ_PROMPT( dump_last_run.dump_folder_name);
-            DBJ_PROMPT( dump_last_run.dump_file_name);
+            DBJ_INFO( "Dump folder: %s", dump_last_run.dump_folder_name );
+            DBJ_INFO( "Dump file  : %s", dump_last_run.dump_file_name);
         }
-         DBJ_PROMPT( "Open the minidump in Visual Studio...");
+         DBJ_INFO( "Open the minidump in Visual Studio...");
 
     } 
-        DBJ_PROMPT( DBJ_APP_NAME ": Leaving...");
+        DBJ_INFO( DBJ_APP_NAME ": Leaving...");
         system("@pause");
         return 42;
 } // main

@@ -1,6 +1,6 @@
 #ifndef VT100_VT100WIN10_INCLUDED
 #define VT100_VT100WIN10_INCLUDED
-/* (c) 2019-2020 by dbj.org   -- CC BY-SA 4.0 -- https://creativecommons.org/licenses/by-sa/4.0/ */
+/* (c) 2019 by dbj.org   -- CC BY-SA 4.0 -- https://creativecommons.org/licenses/by-sa/4.0/ */
 
 /*
 VT100 ESC codes for coloring the WIN10 PRO console output
