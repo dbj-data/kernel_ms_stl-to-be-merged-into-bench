@@ -13,6 +13,7 @@
       - [1.2.2.3. Use Watson instead?](#1223-use-watson-instead)
     - [1.2.3. SEH friendly C++ you can do](#123-seh-friendly-c-you-can-do)
     - [1.2.4. COM, C++ and /kernel builds](#124-com-c-and-kernel-builds)
+  - [Conslusion(s)](#conslusions)
 
 
 What seems to be the issue? The issue seems to be it is not clearly documented how to use MS STL without C++ exceptions. Or while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019). Or while simply not using any '/EH' switch.
@@ -386,4 +387,10 @@ We aren’t actually driver developers ourselves and are interested in feedback
   When attempting C++ /kernel builds, you need to know right now [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
 
 
+## Conslusion(s)
 
+Many people are, but I am not that perturbed with MS STL apparent duality and ability to switch of C++ exceptions easily.
+
+Neither many projects are. Simply: most of the customers are on Windows. WIN32 is primary Windows API. WIN32 is C. SEH is standard on Windows, not C++ exceptions.
+
+For low level Windows code, SEH is the OS norm.
