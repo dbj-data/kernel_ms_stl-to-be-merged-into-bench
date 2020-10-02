@@ -12,9 +12,9 @@ Kernel switch, what is that?
 #include <time.h>
 
 #if _HAS_EXCEPTIONS
-#define DBJ_THRW_TRY_CATCH_ALLOWED
+#define DBJ_CPP_EXCEPTIONS
 #else // ! _HAS_EXCEPTIONS
-#undef   DBJ_THRW_TRY_CATCH_ALLOWED
+#undef   DBJ_CPP_EXCEPTIONS
 #endif _HAS_EXCEPTIONS
 
 #undef TRY_COMDEF_KERNEL_COMBO
@@ -53,9 +53,9 @@ canary in_the_coal_mine(__FILE__, __LINE__ ) ;
 extern "C" int program (int argc , char ** argv ) 
 {
 
-#ifdef DBJ_THRW_TRY_CATCH_ALLOWED
+#ifdef DBJ_CPP_EXCEPTIONS
   try {
-#endif // DBJ_THRW_TRY_CATCH_ALLOWED
+#endif // DBJ_CPP_EXCEPTIONS
 
 #ifdef TRY_COMDEF_KERNEL_COMBO
 // REPEATED WARNING! as of 2020OCT01 comdef.h + /kernel works by accident
@@ -79,12 +79,30 @@ Thus there is no /HE beside compiler intrinsic /HE
 #endif // TRY_COMDEF_KERNEL_COMBO
 
 #ifdef TRY_MS_STL_KERNEL_COMBO
-std::vector<bool> bv_{ true, true, true } ;
-// throws standard C++ exception when not built with /kernel
-auto never = bv_.at(22);
+/*
+        std::vector<bool> bv_{ true, true, true } ;
+         auto never = bv_.at(22);
+that boils down to   
+https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
+line# 25       
+*/
+#ifdef DBJ_CPP_EXCEPTIONS
+// MS STL macro _THROW(x) is defined here as throw x
+// _THROW(out_of_range("invalid vector<bool> subscript"));
+// from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
+// this is thrown as
+ throw out_of_range("invalid vector<bool> subscript") ;
+#else // ! DBJ_CPP_EXCEPTIONS
+// MS STL macro _THROW(x) is defined here as throw x._Raise()
+// _THROW(out_of_range("invalid vector<bool> subscript"));
+// from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
+// this is thrown as
+out_of_range("invalid vector<bool> subscript")._Raise() ;
+#endif // ! DBJ_CPP_EXCEPTIONS
+
 #endif // TRY_MS_STL_KERNEL_COMBO
 
-#ifdef DBJ_THRW_TRY_CATCH_ALLOWED
+#ifdef DBJ_CPP_EXCEPTIONS
 // NOTE: this is not allowed to compile in case /kernel switch is used
 // whatever is  the /EHx combination
   } catch ( std::out_of_range const & x_ ) {
@@ -97,7 +115,7 @@ auto never = bv_.at(22);
   catch ( ... ) {
        DBJ_ERROR("C++ exception caught!");
   }
-#endif // DBJ_THRW_TRY_CATCH_ALLOWED
+#endif // DBJ_CPP_EXCEPTIONS
 
 // NOTE! in the /kernel builds or if there are no std exceptions
 // this line is not visited

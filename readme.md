@@ -8,7 +8,10 @@
   - [1.2. Thoughts and Issues](#12-thoughts-and-issues)
     - [1.2.1. Bjarne and SEH](#121-bjarne-and-seh)
     - [1.2.2. MS STL and SEH](#122-ms-stl-and-seh)
-    - [1.2.3. SEH friendly C++](#123-seh-friendly-c)
+      - [Down the Rabbit Hole](#down-the-rabbit-hole)
+      - [Into the realm of Windows](#into-the-realm-of-windows)
+      - [Use Watson instead?](#use-watson-instead)
+    - [1.2.3. SEH friendly C++ you can do](#123-seh-friendly-c-you-can-do)
     - [1.2.4. COM, C++ and /kernel builds](#124-com-c-and-kernel-builds)
 
 
@@ -44,7 +47,11 @@ It seems (at least to me) Bjarne has expressed explicit dislike for MSFT SEH
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf
 
 ### 1.2.2. MS STL and SEH
-It also seems bellow is a grouping of all SEH raising 6 functions, existing in MS STL.
+
+So how is MS STL exception throwing designed and implemented? (circa 2020 OCT)
+
+From inside MS STL it appears only eight exceptions are thrown. And they are thrown by calling eight `noreturn` functions.
+Bellow is a grouping of all SEH raising 8 functions, existing in MS STL source available.
 ```cpp
 // <xutility> #5817
 
@@ -55,16 +62,211 @@ It also seems bellow is a grouping of all SEH raising 6 functions, existing in M
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xoverflow_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
 ```
-there is two more (declared/defined somewhere/elsewhere)
+There is two more (declared/defined somewhere/elsewhere)
 ```cpp
+// probably in <functional>
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
+// probably in <regex>
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(const regex_constants::error_type _Code);
 ```
 
-Implementation of all eight is in https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
+Implementation of those eight is in https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
 
-### 1.2.3. SEH friendly C++
-(It seems ) This is how that mechanism/design works (as an example ) :
+#### Down the Rabbit Hole
+
+From wherever in MS STL if exception is to be thrown one of those eight is called. As an example if you do this
+```cpp
+std::vector<bool> bv_{ true, true, true } ;
+// throws standard C++ exception when not built with /kernel
+auto never = bv_.at(22);
+```
+`at()` is very simple
+```cpp
+// <vector> #2581
+    _NODISCARD reference at(size_type _Off) {
+        if (size() <= _Off) {
+            _Xran();
+        }
+
+        return (*this)[_Off];
+    }
+```
+Where `Xran()` is on of the only two noreturn points 
+```cpp
+// <vector> # 2837
+    [[noreturn]] void _Xlen() const {
+        _Xlength_error("vector<bool> too long");
+    }
+
+    [[noreturn]] void _Xran() const {
+        _Xout_of_range("invalid vector<bool> subscript");
+    }
+```
+And that `_Xout_of_range` is declared in xutility, with friends
+```cpp
+// <xutility> #5817
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_alloc();
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xinvalid_argument(_In_z_ const char*);
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xlength_error(_In_z_ const char*);
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char*);
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xoverflow_error(_In_z_ const char*);
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
+```
+And defined in the above mentioned https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp 
+```cpp
+// xthrow.cpp # 24
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char* const _Message) {
+    _THROW(out_of_range(_Message));
+}
+```
+And that _THROW is defined in relation to do we have or do we not have C++ exceptions in the current build 
+```cpp
+//<yvals.h> # 447
+// EXCEPTION MACROS
+#if _HAS_EXCEPTIONS
+#define _TRY_BEGIN try {
+#define _CATCH(x) \
+    }             \
+    catch (x) {
+#define _CATCH_ALL \
+    }              \
+    catch (...) {
+#define _CATCH_END }
+
+#define _RERAISE  throw
+#define _THROW(x) throw x
+
+#else // _HAS_EXCEPTIONS
+#define _TRY_BEGIN \
+    {              \
+        if (1) {
+#define _CATCH(x) \
+    }             \
+    else if (0) {
+#define _CATCH_ALL \
+    }              \
+    else if (0) {
+#define _CATCH_END \
+    }              \
+    }
+
+#ifdef _DEBUG
+#define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#endif // _DEBUG
+
+#define _RERAISE
+#define _THROW(x) x._Raise()
+#endif // _HAS_EXCEPTIONS
+```
+Thus if we look back into 
+```cpp
+// xthrow.cpp # 24
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char* const _Message) {
+    _THROW(out_of_range(_Message));
+}
+```
+We will understand, in case of no C++ exceptions that becomes
+```cpp
+// xthrow.cpp # 24
+[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char* const _Message) {
+    out_of_range(_Message)._Raise() ;
+}
+```
+
+#### Into the realm of Windows
+
+Which means on the instance of `std::out_of_range` exception type there has to be this little peculiar `_Raise()` method. And, for some people, this is the point of contention where MS STL is leaving the realm of ISO C++ and entering the realm of Windows. (irrelevant for this analysis, code left out bellow)
+
+```cpp
+#if _HAS_EXCEPTIONS
+
+// <exception> # 32
+#include <malloc.h>
+#include <vcruntime_exception.h>
+```
+```cpp
+// <exception> # 63
+#else // !  _HAS_EXCEPTIONS
+```
+For _HAS_EXCEPTIONS==0 scenario, there is this global `_Raise_handler`
+```cpp
+using _Prhand = void(__cdecl*)(const exception&);
+// <exception> # 76
+extern _CRTIMP2_PURE_IMPORT _Prhand _Raise_handler; // pointer to raise handler
+```
+And in MS STL there is version of std::exception in existence for _HAS_EXCEPTIONS==0 scenario
+```cpp
+// <exception> # 81
+class exception { // base of all library exceptions
+public:
+    static _STD _Prhand _Set_raise_handler(_STD _Prhand _Pnew) { // register a handler for _Raise calls
+        const _STD _Prhand _Pold = _STD _Raise_handler;
+        _STD _Raise_handler      = _Pnew;
+        return _Pold;
+    }
+```
+That is obviously called to set the global raise handler, before any of the exceptions can be used in _HAS_EXCEPTIONS==0 scenario.
+```cpp
+    // this constructor is necessary to compile
+    // successfully header new for _HAS_EXCEPTIONS==0 scenario
+    explicit __CLR_OR_THIS_CALL exception(const char* _Message = "unknown", int = 1) noexcept : _Ptr(_Message) {}
+```
+And here is this above mentioned little and peculiar `_Raise()` method which is used instead of the `throw` keyword which is forbidden in CL _HAS_EXCEPTIONS==0 scenario
+```cpp    
+// <exception> # 106
+    [[noreturn]] void __CLR_OR_THIS_CALL _Raise() const { // raise the exception
+        if (_STD _Raise_handler) {
+            (*_STD _Raise_handler)(*this); // call raise handler if present
+        }
+
+        _Doraise(); // call the protected virtual
+        _RAISE(*this); // raise this exception
+    }
+
+protected:
+    virtual void __CLR_OR_THIS_CALL _Doraise() const {} // perform class-specific exception handling
+}; // eof std::exception for   _HAS_EXCEPTIONS==0 scenario
+// <exception> # 198
+#endif // _HAS_EXCEPTIONS
+```
+`bad_alloc`, `bad_array_new_length`, `bad_exception` also have different versions for _HAS_EXCEPTIONS==0 scenario. Back to investigation. That std exception `_Raise()` method uses two more levels of indirection: `_Raise_handler` global function pointer and protected `_Doraise` method, before eventually calling the `_RAISE` macro. Remember all of of that is inside `[[noreturn]] void _Raise() const` method on the non standard MS STL version of `std::exception`.
+
+And if we point back to our above `<yvalsh>` mention we shall understand, for `_HAS_EXCEPTIONS==0` scenario,  `_RAISE(x)` macro is defined as:
+```cpp
+// <yvals.h> # 475
+#ifdef _DEBUG
+#define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#endif // _DEBUG
+```
+
+#### Use Watson instead? 
+
+And that is interesting, to put it mildly. For `_HAS_EXCEPTIONS==0` scenario, MS STL on each exception raise, actually calls [Dr Watson to do the job](https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/28725-use-watson-instead). Sherlock is nowhere to be seen.
+
+But that is fine and OK as we have "come out on the other side" into the wonderful kingdom of Windows Drivers. Driver Technologies, Tools for Testing Drivers and namely this little known office of "Windows Error Reporting" to the inner circle known under the acronym of [WER](https://docs.microsoft.com/en-us/windows/win32/wer/windows-error-reporting).
+
+WER basically is that place from where you can call back to daddy and complain. 
+
+*"... enables users to notify Microsoft of application faults, kernel faults, unresponsive applications, and other application specific problems. Microsoft can use the error reporting feature to provide customers with troubleshooting information, solutions, or updates for their specific problems. Developers can use this infrastructure to receive information that can be used to improve their applications..."*
+
+But do not fret. 
+
+Windows as you know it is actually Windows NT. And one of the foundation stones of Win NT are "Structured Exceptions" aka [SEH](https://en.wikipedia.org/wiki/Microsoft-specific_exception_handling_mechanisms#SEH).  `_invoke_watson` simply raises the SE aka "Structued Exception". What I do is I simply catch it on the top level. `main()` is the good place.
+
+In case of [SE caught](https://docs.microsoft.com/en-us/windows/win32/debug/using-an-exception-handler) I create and save a minidump specific to my application. And looking into that minidump with Visual Studio, I can pinpoint the issue that made the application misbehave. That includes every possible issue, not just C++ exceptions being thrown. And that is very powerful. 
+
+I simply have this standard SE aware main in each and every of my WIN apps. That is now very complicated and has a lot of benefits. 
+
+Before next section, please do understand SE is inbuilt in the CL compiler and there are SE intrinsics too. Including the [keywords added](https://docs.microsoft.com/en-us/windows/win32/debug/abnormaltermination) to both C and C++.
+
+
+### 1.2.3. SEH friendly C++ you can do
+Now you know how that mechanism and design works. You can do that too in your C++ Windows, SEH friendly code.
+
 ```cpp
 namespace my {
     inline namespace constants {
