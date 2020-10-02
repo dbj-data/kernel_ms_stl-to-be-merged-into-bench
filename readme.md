@@ -393,4 +393,4 @@ Many people are, but I am not that perturbed with MS STL apparent duality and ab
 
 Neither many projects are. Simply: most of the customers are on Windows. WIN32 is primary Windows API. WIN32 is C. SEH is standard on Windows, not C++ exceptions.
 
-For low level Windows code, SEH is the OS norm.
+For Windows code, SEH is the OS norm.
