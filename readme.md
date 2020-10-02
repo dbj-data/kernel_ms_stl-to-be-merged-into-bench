@@ -1,21 +1,21 @@
 
-# 1. C++, cl and the /kernel builds
+# 1. C++, Windows and the SEH
 
 > (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj/
 
-- [1. C++, cl and the /kernel builds](#1-c-cl-and-the-kernel-builds)
+- [1. C++, Windows and the SEH](#1-c-windows-and-the-seh)
   - [1.1. Usage](#11-usage)
   - [1.2. Thoughts and Issues](#12-thoughts-and-issues)
     - [1.2.1. Bjarne and SEH](#121-bjarne-and-seh)
     - [1.2.2. MS STL and SEH](#122-ms-stl-and-seh)
-      - [Down the Rabbit Hole](#down-the-rabbit-hole)
-      - [Into the realm of Windows](#into-the-realm-of-windows)
-      - [Use Watson instead?](#use-watson-instead)
+      - [1.2.2.1. Down the Rabbit Hole](#1221-down-the-rabbit-hole)
+      - [1.2.2.2. Into the realm of Windows](#1222-into-the-realm-of-windows)
+      - [1.2.2.3. Use Watson instead?](#1223-use-watson-instead)
     - [1.2.3. SEH friendly C++ you can do](#123-seh-friendly-c-you-can-do)
     - [1.2.4. COM, C++ and /kernel builds](#124-com-c-and-kernel-builds)
 
 
-What seems to be the issue? The issue seems to be it is not clearly documented how to use MS STL, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019).
+What seems to be the issue? The issue seems to be it is not clearly documented how to use MS STL, while using [the cl /kernel switch](https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019). Or while simply not using any '/EH' switch.
 
 I am using this little project to approve or disapprove your doubts. On the official side, things are happening around this issue:
 
@@ -72,7 +72,7 @@ There is two more (declared/defined somewhere/elsewhere)
 
 Implementation of those eight is in https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
 
-#### Down the Rabbit Hole
+#### 1.2.2.1. Down the Rabbit Hole
 
 From wherever in MS STL if exception is to be thrown one of those eight is called. As an example if you do this
 ```cpp
@@ -175,7 +175,7 @@ We will understand, in case of no C++ exceptions that becomes
 }
 ```
 
-#### Into the realm of Windows
+#### 1.2.2.2. Into the realm of Windows
 
 Which means on the instance of `std::out_of_range` exception type there has to be this little peculiar `_Raise()` method. And, for some people, this is the point of contention where MS STL is leaving the realm of ISO C++ and entering the realm of Windows. (irrelevant for this analysis, code left out bellow)
 
@@ -243,7 +243,7 @@ And if we point back to our above `<yvalsh>` mention we shall understand, for `_
 #endif // _DEBUG
 ```
 
-#### Use Watson instead? 
+#### 1.2.2.3. Use Watson instead? 
 
 And that is interesting, to put it mildly. For `_HAS_EXCEPTIONS==0` scenario, MS STL on each exception raise, actually calls [Dr Watson to do the job](https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/28725-use-watson-instead). Sherlock is nowhere to be seen.
 
@@ -274,68 +274,84 @@ namespace my {
         error_ctype,
         error_syntax
     };
-    } // namespace constants
+    } // my namespace constants
 
-// does not inherit from std::exception
+// my::error does not inherit from std::exception
 struct error final 
 { 
     error () = default ;
 
-    const char * msg_ {"error"};
+    const char * msg_ {"unknown"};
 
-    explicit  error( constants::error_type ex_ ) 
-    : err_(ex_) 
-    { /* default ctor body */ }
+    const char * what () const noexcept { return msg_ ; }
 
-    _NODISCARD constants::error_type code() const {
+    explicit  error( constants::error_type ex_ ) noexcept : err_(ex_)   
+    { /* here make the message by the code */ }
+
+    constants::error_type code() const {
         return err_ ;
     }
 
-#ifndef DBJ_RAISE 
+#ifndef MY_RAISE 
 #ifdef _DEBUG
-#define DBJ_RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
+#define MY_RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
 #else // _DEBUG
-#define DBJ_RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#define MY_RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #endif // _DEBUG    
 #endif // !  DBJ_RAISE
 
-    // MS STL do not throw instance of this type
-    // there is no throw in /kernel builds
     // we raise the SEH through calling _invoke_watson
-    void raise() const noexcept { 
+    [[noreturn]] void raise() const { 
         DBJ_RAISE(*this) ;
     }
 
+} ; // eof error
 ```
- _RAISE is to be found also in yvals.h as :
+We will always use the `MY_THROW` macro
 ```cpp
-#ifdef _DEBUG
-#define _RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else // _DEBUG
-#define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // _DEBUG
-
-    constants::error_type err_ ;
-} ; // error
+#if _HAS_EXCEPTIONS==0
+      MY_THROW(x) x.raise() ;
+#else
+      MY_THROW(x) throw x ;
+#endif
 ```
-That might mean c++ type of c++ exception is simply erased in /kernel builds?
-Or not. MS STL _THROW macro is used for _NO_EXCEPTIONS builds and that simply does the following:
-
-```cpp
-// <yvals> #482
-_THROW(x) x._Raise()
-```
-with _Raise() in `<exception> #186`, on /kernel version of std::exception for _NO_EXCEPTION builds
-
-There is always a function that does not return. A level of indirection to improve the change-ability of the design always exist:
+Lastly, there is always a function that does the raise, and does not return. A level of indirection to improve the change-ability of the design always exist:
 ```cpp
 [[noreturn]] inline void __cdecl 
-    my_error_throw (const constants::error_type code_) 
+    error_throw (const constants::error_type code_) 
     {
-      error(code_).raise() ;
+        MY_THROW( error(code_) ) ;
     }
-} // my
+} // eof my ns
 ```
+Your main should always be "SEH enabled"
+```cpp
+// build without /EHsc or any other /EH 
+// or use the /kernel switch
+extern "C" int main (int argc, char ** argv) 
+{
+     __try 
+    { 
+        __try {
+           my::error_throw( constants::error_type::error_syntax ) ;
+        }
+        __finally {
+            // will be always visited
+        }
+    }
+    __except ( 1 /* 1 == EXCEPTION_EXECUTE_HANDLER */ ) 
+    { 
+        // your code here
+    }
+    return 0 ;
+}
+```
+That will always work c++ exception or no C++ exceptions. In case you want C++ exceptions you can not mix that in the same function, so you just call some entry point into your standard C++ app from the `main()` above.
+
+If you build with `/EHsc` your app will be: c++ exceptions **and** SEH enabled. If built without, you will be only SEH enabled.
+
+> In Windows C/C++, SEH is always enabled
+
 
 <!-- 
  1.2.4. The mythical (MS STL)"CORE"
@@ -366,13 +382,13 @@ We aren’t actually driver developers ourselves and are interested in feedback
  </i>
 
  \<end citation>
+ 
+ Is there still such a thing as "MS STL Core"? If not is it on the roadmap? Is this going to be a MS STL part that will work with the new /kernel- switch variant, I first noticed 2020SEP28 published on-line?
  -->
 
- Is there still such a thing as "MS STL Core"? If not is it on the roadmap? Is this going to be a MS STL part that will work with the new /kernel- switch variant, I first noticed 2020SEP28 published on-line?
- 
  ### 1.2.4. COM, C++ and /kernel builds
  
-  When attempting C++ /kernel builds, right now [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
+  When attempting C++ /kernel builds, you need to know right now [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` /kernel combination until further notice.
 
 
 
