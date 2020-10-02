@@ -91,13 +91,13 @@ line# 25
 // _THROW(out_of_range("invalid vector<bool> subscript"));
 // from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
 // this is thrown as
- throw out_of_range("invalid vector<bool> subscript") ;
+ throw std::out_of_range("invalid vector<bool> subscript") ;
 #else // ! DBJ_CPP_EXCEPTIONS
 // MS STL macro _THROW(x) is defined here as throw x._Raise()
 // _THROW(out_of_range("invalid vector<bool> subscript"));
 // from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
 // this is thrown as
-out_of_range("invalid vector<bool> subscript")._Raise() ;
+std::out_of_range("invalid vector<bool> subscript")._Raise() ;
 #endif // ! DBJ_CPP_EXCEPTIONS
 
 #endif // TRY_MS_STL_KERNEL_COMBO
