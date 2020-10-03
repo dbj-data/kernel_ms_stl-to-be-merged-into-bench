@@ -40,28 +40,22 @@ To open that file you need **Visual Studio**. After which [in the upper right co
 
 Generating minidump is one very powerful feature. Almost all of[ my/our Windows apps are implementing it](https://github.com/DBJDBJ/kernel_ms_stl/blob/master/readme.md).
 
-<h3>&nbsp;</h3>
-
 ## 1.2. Thoughts and Issues
-<h3>&nbsp;</h3>
 
 ### 1.2.1. Standard and SEH
-<h3>&nbsp;</h3>
 
 It seems (at least to me) author of C++ (one Mr B. Stroustrup) has expressed explicit dislike for MSFT SEH, in this very recent paper: 
-http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf <h3>&nbsp;</h3>
+http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf 
 
 ### 1.2.2. MS STL and SEH
-<h3>&nbsp;</h3>
+
 So how is MS STL exception throwing designed and implemented? (circa 2020 OCT)
 
 From inside MS STL, as far as I can see, only eight exceptions are thrown. And they are thrown by calling eight `noreturn` functions. Bellow is a grouping of all SEH raising 8 functions, existing in MS STL source available, circa 2020 Q4.
 
 Implementation of those eight is inside https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
-<h3>&nbsp;</h3>
 
 #### 1.2.2.1. Down the Rabbit Hole of MS STL
-<h3>&nbsp;</h3>
 
 From wherever in MS STL if exception is to be thrown one of those eight is called. As an example if you do this
 ```cpp
@@ -166,11 +160,8 @@ You will understand, in case of no C++ exceptions that becomes
 ```
 
 Which means on the instance of `std::out_of_range` exception type there has to be this little peculiar `_Raise()` method. And, for some people, this is the point of contention where MS STL is leaving the realm of ISO C++ and entering the realm of Windows. 
-<h3>&nbsp;</h3>
 
 #### 1.2.2.2. Into the realm of Windows
-
-<h3>&nbsp;</h3>
 
 Irrelevant for this analysis, some code is left out bellow.
 
@@ -259,8 +250,8 @@ I simply have this standard SE aware main in each and every of my WIN apps. That
 
 Before next section, please do understand SE is inbuilt in Windows and in the CL compiler and there are SE intrinsics too. Including the [keywords added](https://docs.microsoft.com/en-us/windows/win32/debug/abnormaltermination) to both C and C++.
 
-
 ### 1.2.3. SEH friendly C++ you can do
+
 Now you know how that mechanism and design works. You can do that too in your C++ Windows, SEH friendly code.
 
 ```cpp
@@ -320,7 +311,7 @@ Lastly, there is always a function that does the raise, and does not return. A l
     }
 } // eof my ns
 ```
-Your main should always be "SEH enabled"
+Your Windows main should always be "SEH enabled"
 ```cpp
 // build without /EHsc or any other /EH 
 // or use the /kernel switch
