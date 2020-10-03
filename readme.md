@@ -25,10 +25,8 @@ I am using this little project to approve or disapprove your doubts. On the offi
 
 
 Findings and thoughts are in the main.cpp. In comment or snippets and samples. What is interesting here is to use this project, to try and use different parts of MS STL in cl kernel build. And then follow through debugger, to where is your/this sample taking you into the depths of the vast MS STL code base.
-<h3>&nbsp;</h3>
 
 ## 1.1. Usage
-<h3>&nbsp;</h3>
 
 Of course this is strictly Windows code. And this is **VS Code** project. If you are reading this, it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. There is also clean.cmd; hint: it clears the cruft left after the builds.
 
