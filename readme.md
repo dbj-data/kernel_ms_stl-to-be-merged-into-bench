@@ -40,7 +40,7 @@ To open that file you need **Visual Studio**. After which [in the upper right co
 
 ![vstudio_minidump_dialogue](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019)
 
-Generating minidump is an very powerful feature. Almost all of[ my/our Windows apps are implementing it](https://github.com/DBJDBJ/kernel_ms_stl/blob/master/readme.md).
+Generating minidump is one very powerful feature. Almost all of[ my/our Windows apps are implementing it](https://github.com/DBJDBJ/kernel_ms_stl/blob/master/readme.md).
 
 <h3>&nbsp;</h3>
 
