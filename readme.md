@@ -6,7 +6,7 @@
 - [1. C++, Windows and the SEH](#1-c-windows-and-the-seh)
   - [1.1. Usage](#11-usage)
   - [1.2. Thoughts and Issues](#12-thoughts-and-issues)
-    - [1.2.1. Bjarne and SEH](#121-bjarne-and-seh)
+    - [1.2.1. Standard and SEH](#121-standard-and-seh)
     - [1.2.2. MS STL and SEH](#122-ms-stl-and-seh)
       - [1.2.2.1. Down the Rabbit Hole of MS STL](#1221-down-the-rabbit-hole-of-ms-stl)
       - [1.2.2.2. Into the realm of Windows](#1222-into-the-realm-of-windows)
@@ -24,40 +24,40 @@ I am using this little project to approve or disapprove your doubts. On the offi
 - https://github.com/microsoft/STL/issues/639
 
 
-Findings and thoughts are in the main.cpp. In comment or snippets and samples. What is interesting here is to use this project, to try and use different parts of MS STL in cl kernel build. And then follow through debugger where is your sample taking you in the depths of the vast MS STL code base.
+Findings and thoughts are in the main.cpp. In comment or snippets and samples. What is interesting here is to use this project, to try and use different parts of MS STL in cl kernel build. And then follow through debugger, to where is your/this sample taking you into the depths of the vast MS STL code base.
 <h3>&nbsp;</h3>
 
 ## 1.1. Usage
 <h3>&nbsp;</h3>
 
-Of course this is strictly Windows code. And this is **VS Code** project. 
+Of course this is strictly Windows code. And this is **VS Code** project. If you are reading this, it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. There is also clean.cmd; hint: it clears the cruft left after the builds.
 
-If you are reading this, it is safe to assume you know how to use VS Code to do C++ builds. Hint: CTRL+SHIFT+B. There is also clean.cmd; hint: it clears the cruft left after the builds.
+You can put your own code in the `program.cpp`. `extern "C" int program (int argc , char ** argv )` is where the user code starts. 
 
-You can put your own code in the program.cpp. `extern "C" int program (int argc , char ** argv )` is where the user code starts. 
+If SEH exception is raised that is caught inside `dbj_main`, and "minidump" dmp file is created. You are informed where is it saved, and what is the full path. SEH is intrinsic to Windows and CL.exe. Thus that `dbj_main` always works and catches all potential SE's.
 
-If SEH exception is raised that is caught in `dbj_main`, and "minidump" dmp file is created. You are informed where is it, and what is the full path. SEH is intrinsic to Windows and CL.exe. Thus that `dbj_main` always works and catches all potential SE's.
+To open that file you need **Visual Studio**. After which [in the upper right corner](https://docs.microsoft.com/en-us/visualstudio/debugger/using-dump-files?view=vs-2019), you will spot the link to the native debugging entitled ["Debug With Native Only"](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019). Click on that and soon you will be pushed to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
 
-To open that file you need **Visual Studio**. After which in the upper right corner like "smallish windows" you will spot the link to native debugging. Click on that and soon you will be jumped to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
+![vstudio_minidump_dialogue](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019)
+
+Generating minidump is an very powerful feature. Almost all of[ my/our Windows apps are implementing it](https://github.com/DBJDBJ/kernel_ms_stl/blob/master/readme.md).
+
 <h3>&nbsp;</h3>
 
 ## 1.2. Thoughts and Issues
 <h3>&nbsp;</h3>
 
-Probably the best page on MS Docs on the subject of SEH vs standard C++ is [here](https://docs.microsoft.com/en-us/cpp/build/reference/eh-exception-handling-model?view=vs-2019#default-exception-handling-behavior). If needed, please read and understand before proceeding.
+### 1.2.1. Standard and SEH
 <h3>&nbsp;</h3>
 
-### 1.2.1. Bjarne and SEH
-<h3>&nbsp;</h3>
-
-It seems (at least to me) Bjarne has expressed explicit dislike for MSFT SEH
+It seems (at least to me) author of C++ (one Mr B. Stroustrup) has expressed explicit dislike for MSFT SEH, in this very recent paper: 
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf <h3>&nbsp;</h3>
 
 ### 1.2.2. MS STL and SEH
 <h3>&nbsp;</h3>
 So how is MS STL exception throwing designed and implemented? (circa 2020 OCT)
 
-From inside MS STL, as far as I can see, only eight exceptions are thrown. And they are thrown by calling eight `noreturn` functions. Bellow is a grouping of all SEH raising 8 functions, existing in MS STL source available.
+From inside MS STL, as far as I can see, only eight exceptions are thrown. And they are thrown by calling eight `noreturn` functions. Bellow is a grouping of all SEH raising 8 functions, existing in MS STL source available, circa 2020 Q4.
 
 Implementation of those eight is inside https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
 <h3>&nbsp;</h3>
@@ -69,6 +69,8 @@ From wherever in MS STL if exception is to be thrown one of those eight is calle
 ```cpp
 std::vector<bool> bv_{ true, true, true } ;
 // throws standard C++ exception when not built with /kernel
+// transparently becomes SE (Structured Exception)
+// in case /kernel is used or there is simply no /EH switch
 auto never = bv_.at(22);
 ```
 `at()` is very simple
@@ -81,18 +83,18 @@ auto never = bv_.at(22);
         return (*this)[_Off];
     }
 ```
-Where `Xran()` is on of the only two noreturn points avaialbe inside the `std::vector<T>`
+Where `Xran()` is on of the only two noreturn points available inside the `std::vector<T>`
 ```cpp
 // <vector> # 2837
     [[noreturn]] void _Xlen() const {
         _Xlength_error("vector<bool> too long");
     }
-
+    // called from std::vector at() method
     [[noreturn]] void _Xran() const {
         _Xout_of_range("invalid vector<bool> subscript");
     }
 ```
-And that `_Xout_of_range` is declared inside `<xutility>`, with friends
+And that `_Xout_of_range` is declared inside `<xutility>`, together with friends
 ```cpp
 // <xutility> #5817
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_alloc();
@@ -102,7 +104,7 @@ And that `_Xout_of_range` is declared inside `<xutility>`, with friends
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xoverflow_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
 ```
-And defined in the above mentioned https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp . Which is a part of MS STL open source.
+There is eight of them. Above six (and other two: `bad_function_call` and `regex_error`)are defined (implemented) in the above mentioned https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp . A part of MS STL open source.
 ```cpp
 // xthrow.cpp # 24
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xout_of_range(_In_z_ const char* const _Message) {
