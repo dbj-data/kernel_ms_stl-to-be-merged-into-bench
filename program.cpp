@@ -18,10 +18,10 @@ Kernel switch, what is that?
 #endif _HAS_EXCEPTIONS
 
 #undef TRY_COMDEF_KERNEL_COMBO
-#ifdef TRY_COMDEF_KERNEL_COMBO
+//#ifdef TRY_COMDEF_KERNEL_COMBO
 // WARNING! as of 2020OCT01 comdef.h + /kernel, seemingly works by accident
 #include <comdef.h>
-#endif // TRY_COMDEF_KERNEL_COMBO
+//#endif // TRY_COMDEF_KERNEL_COMBO
 
 #define TRY_MS_STL_KERNEL_COMBO
 #ifdef TRY_MS_STL_KERNEL_COMBO
@@ -56,6 +56,9 @@ canary in_the_coal_mine(__FILE__, __LINE__ ) ;
 // --------------------------------------------------------------------------
 extern "C" int program (int argc , char ** argv ) 
 {
+// NOTE! in the /kernel builds or if there are no std exceptions
+// this line is not visited
+canary in_the_abadon(__FILE__, __LINE__ ) ;
 
 #ifdef DBJ_CPP_EXCEPTIONS
   try {
@@ -83,32 +86,13 @@ Thus there is no /HE beside compiler intrinsic /HE
 #endif // TRY_COMDEF_KERNEL_COMBO
 
 #ifdef TRY_MS_STL_KERNEL_COMBO
-/*
-        std::vector<bool> bv_{ true, true, true } ;
-         auto never = bv_.at(22);
-that boils down to   
-https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp
-line# 25       
-*/
-#ifdef DBJ_CPP_EXCEPTIONS
-// MS STL macro _THROW(x) is defined here as throw x
-// _THROW(out_of_range("invalid vector<bool> subscript"));
-// from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
-// this is thrown as
- throw std::out_of_range("invalid vector<bool> subscript") ;
-#else // ! DBJ_CPP_EXCEPTIONS
-// MS STL macro _THROW(x) is defined here as throw x._Raise()
-// _THROW(out_of_range("invalid vector<bool> subscript"));
-// from https://github.com/microsoft/STL/blob/master/stl/src/xthrow.cpp # 24
-// this is thrown as
-std::out_of_range("invalid vector<bool> subscript")._Raise() ;
-#endif // ! DBJ_CPP_EXCEPTIONS
+
+std::vector<bool> bv_{ true, true, true } ;
+auto never = bv_.at(22);
 
 #endif // TRY_MS_STL_KERNEL_COMBO
 
 #ifdef DBJ_CPP_EXCEPTIONS
-// NOTE: this is not allowed to compile in case /kernel switch is used
-// whatever is  the /EHx combination
   } catch ( std::out_of_range const & x_ ) {
        DBJ_ERROR("%s ", x_.what() );
   }
@@ -120,10 +104,6 @@ std::out_of_range("invalid vector<bool> subscript")._Raise() ;
        DBJ_ERROR("C++ exception caught!");
   }
 #endif // DBJ_CPP_EXCEPTIONS
-
-// NOTE! in the /kernel builds or if there are no std exceptions
-// this line is not visited
-canary in_the_abadon(__FILE__, __LINE__ ) ;
 
    return 0;
 }

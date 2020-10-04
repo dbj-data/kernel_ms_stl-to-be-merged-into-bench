@@ -12,6 +12,25 @@ whatever /kernel build needs or might need
 #include <new>
 
 // --------------------------------------------------------------------------
+struct command_line final {
+    
+    command_line() = delete ;
+
+    explicit command_line( int argc , char ** argv ) noexcept :
+       argc_{argc} ,
+       args( argv + 1 ) , 
+       prog_path( argv[0])       
+    {
+        strcpy( prog_basename, strrchr( prog_path, '\\') + 1 );
+    }
+ 
+  const int argc_{0} ;
+  char ** args{0};
+  const char * prog_path ;
+  char prog_basename[0xFF]{0};
+}; // command_line
+
+// --------------------------------------------------------------------------
 /*
 <vcruntime.h> #100
 
@@ -78,6 +97,7 @@ extern "C" static int dbj_main (int argc, char ** argv)
         std::set_new_handler(my_handler);
         errno = 0 ;
             DBJ_INFO( DBJ_APP_NAME ": " DBJ_APP_VERSION );
+            command_line cli(argc,argv);
                 program(argc,argv);
         }
         __finally {

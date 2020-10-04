@@ -6,9 +6,9 @@
             "label": "DEBUG_KERNEL",
             "command": "cl.exe",
             "args": [
-                "/D_DEBUG",
                 "/MDd",
-                "/kernel",
+                "/D_DEBUG",
+                "/EH",
                 "/Zi",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj_dbg.exe",
@@ -29,8 +29,8 @@
             "label": "RELEASE_BUILD",
             "command": "cl.exe",
             "args": [
-                "/DNDEBUG",
                 "/MD",
+                "/DNDEBUG",
                 "/kernel",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj.exe",
