@@ -204,7 +204,7 @@ public:
         return _Pold;
     }
 ```
-That is obviously called to set the global raise handler, before any of the exceptions can be used in the `_HAS_EXCEPTIONS == 0` scenario.
+That is obviously called to set the global raise handler, in the `_HAS_EXCEPTIONS == 0` scenario.
 
 And here is this above mentioned little and peculiar `_Raise()` method which is used instead of the `throw` keyword which is forbidden in the `_HAS_EXCEPTIONS == 0` scenario:
 
@@ -344,15 +344,17 @@ If you build with `/EHsc` your app will be: c++ exceptions **and** SEH enabled. 
 
  ### 1.2.3. COM, C++ and /kernel builds
 
-["Compiler COM Support"](https://docs.microsoft.com/en-us/cpp/cpp/compiler-com-support?redirectedfrom=MSDN&view=vs-2019) was designed, implemented and tested to also use C++ exceptions. Not SEH.[MSFT COM](https://en.wikipedia.org/wiki/Component_Object_Model) predates C++ standardizations. Just like SEH does.
+["Compiler COM Support"](https://docs.microsoft.com/en-us/cpp/cpp/compiler-com-support?redirectedfrom=MSDN&view=vs-2019) was designed, implemented and tested to also use C++ exceptions. Not SEH. [MSFT COM](https://en.wikipedia.org/wiki/Component_Object_Model) predates C++ standardizations. Just like SEH does.
 
-In 2020 Q4, if and when attempting C++ `/kernel`  or no `/EH` builds, C++ exceptions are replaced with SEH. 
+In 2020 Q4, if and when attempting using `<comdef.h>` types, in what we have defined above as "SEH builds", C++ exceptions are replaced with SEH. Almost transparently.
 
-You need to know right now [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` `/kernel` or not `/EH` combination until further notice. 
+You need to know right now, [things are happening in there "by accident"](https://github.com/MicrosoftDocs/cpp-docs/issues/2494#issuecomment-701200395). Pleas do not rely on `<comdef.h>` "SEH builds" combination until further notice. 
 
-"Compiler COM Support" and SEH is accidental combination that works 2020 Q4.
+"Compiler COM Support" and SEH is accidental combination that just happens to work, 2020 Q4.
 
-MSFT ["Compiler COM Support"](https://docs.microsoft.com/en-us/cpp/cpp/compiler-com-support?redirectedfrom=MSDN&view=vs-2019) I do like, it is C++, it is simple and it "just works". But these days it is meeting the not-so-simple standard C++, and WG 21 representatives and followers, inside MSFT. So somebody has decided \<comdef.h> and friends will firmly stay inside c++ exceptions territory. Which is very wierd since all of the MS STL does easily switch between SEH and C++ exceptions.
+MSFT ["Compiler COM Support"](https://docs.microsoft.com/en-us/cpp/cpp/compiler-com-support?redirectedfrom=MSDN&view=vs-2019) I do like, it is C++, it is simple and it "just works". But these days somebody has decided \<comdef.h> and friends will firmly stay inside c++ exceptions territory. Which is weird since all of the MS STL does easily in SEH builds, is to switch between SEH and C++ exceptions.
+
+Easily but not transparently, since in the SEH build, keywords `try`,`throw` and `catch` do not compile.
 
 ## 1.3. Conclusion(s)
 
