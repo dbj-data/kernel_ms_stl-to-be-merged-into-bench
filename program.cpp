@@ -30,6 +30,10 @@ Kernel switch, what is that?
 #include <stdexcept>
 #endif // TRY_MS_STL_KERNEL_COMBO
 
+// we use this canary to test 
+// if constructors and destructors 
+// are called in SEH builds
+// hint: they are
 struct canary final 
 {
   const char * file_ ;

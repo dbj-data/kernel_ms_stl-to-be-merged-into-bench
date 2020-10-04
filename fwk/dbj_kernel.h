@@ -13,8 +13,6 @@ whatever /kernel build needs or might need
 
 // --------------------------------------------------------------------------
 /*
-Is this for C++ exceptions, for SEH or for both?
-
 <vcruntime.h> #100
 
 #ifndef _HAS_EXCEPTIONS // Predefine as 0 to disable exceptions
@@ -34,33 +32,43 @@ void my_handler() noexcept
     exit( EXIT_FAILURE);
 }
 // --------------------------------------------------------------------------
+// https://docs.microsoft.com/en-us/cpp/build/reference/kernel-create-kernel-mode-binary?view=vs-2019
+// optional?
+// somehow /kernel switch is confusing me
+// it mentions the new and delete operator  
+// so they appear as not optional?
+// but. it seems CL will always compile and linker will link
+// with or without these in any kind of C++ builds
+#ifdef DBJ_FOLLOWS_KERNEL_ADVICE
 // optional
-// #ifdef __cpp_aligned_new
-namespace my
-{
-    enum class align_val_t : size_t {};
-}
-// #endif // __cpp_aligned_new
-// --------------------------------------------------------------------------
-// optional
+#ifdef __cpp_aligned_new
+namespace my {  enum class align_val_t : size_t {}; }
+#endif // __cpp_aligned_new
 inline void* operator new  ( size_t count ){  return calloc(1, count) ;}
+#ifdef __cpp_aligned_new
 inline void* operator new  ( size_t count, my::align_val_t al ) { return calloc(1, count) ; }
+#endif
 inline void operator delete  ( void* ptr ) noexcept { free(ptr); }
+#ifdef __cpp_aligned_new
 inline void operator delete  ( void* ptr, my::align_val_t al ) noexcept {free(ptr); }
+#endif
+
+#endif // DBJ_FOLLOWS_KERNEL_ADVICE
 
 // --------------------------------------------------------------------------
+// user code start point
 extern "C" int program (int argc , char ** argv ) ;
 // --------------------------------------------------------------------------
 /*
 Policy is very simple: 
 
-use /kernel switch
-do not use any /EH switch
+use /kernel switch or simply do not use any /EH switch
 have only one top level function as bellow to catch SE
-generate minidump if SE is raised / caught
+then generate minidump if SE is raised.
 
-ps: can somebody decipher these remarks bellow, fully?
-https://docs.microsoft.com/en-us/cpp/build/reference/eh-exception-handling-model?view=vs-2019#default-exception-handling-behavior
+Although this function bellow works always. With or without
+SEH buils. As SEH is intrinsic to Windows.
+
 */
 extern "C" static int dbj_main (int argc, char ** argv) 
 {
@@ -93,7 +101,7 @@ extern "C" static int dbj_main (int argc, char ** argv)
             DBJ_INFO( DBJ_APP_NAME ": Dump folder: %s", dump_last_run.dump_folder_name );
             DBJ_INFO( DBJ_APP_NAME ": Dump file  : %s", dump_last_run.dump_file_name);
         }
-         DBJ_INFO( DBJ_APP_NAME ": Open the minidump in Visual Studio...");
+         DBJ_INFO( DBJ_APP_NAME ": Open that minidump in Visual Studio...");
 
     } 
         DBJ_INFO( DBJ_APP_NAME ": Leaving...");

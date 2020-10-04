@@ -227,7 +227,7 @@ protected:
 ```
 `bad_alloc`, `bad_array_new_length`, `bad_exception` also have different versions for _HAS_EXCEPTIONS == 0 scenario. Back to investigation. That std exception `_Raise()` method uses two levels of indirection: `_Raise_handler` global function pointer and protected `_Doraise` method, before eventually calling the `_RAISE` macro. Remember all of of that is inside `[[noreturn]] void _Raise() const` method on the non standard MS STL version of `std::exception`.
 
-And if we point back to our above `<yvalsh>` mention we shall understand, for `_HAS_EXCEPTIONS == 0` scenario,  `_RAISE(x)` macro is defined as:
+And if we point back to our above `<yvalsh>` mentioning, we shall understand, for `_HAS_EXCEPTIONS == 0` scenario,  `_RAISE(x)` macro is defined as:
 ```cpp
 // <yvals.h> # 475
 #ifdef _DEBUG
