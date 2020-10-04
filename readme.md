@@ -17,7 +17,7 @@
 
 What seems to be the issue? The issue seems to be it is not clearly documented how to use standard C++ and MS STL without C++ exceptions, on Windows. Many people are even unaware they can use any MS STL without exceptions.
 
-**SEH build** -- is cl.exe C/C++ build without any `/EH` switch or without a famous `/kernel` switch. [SEH](https://docs.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=vs-2019) is intrinsic to Windows. SEH is in the foundations of Windows programming.
+**SEH build** -- is cl.exe C/C++ build without any `/EH` switch or with a famous `/kernel` switch. [SEH](https://docs.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=vs-2019) is intrinsic to Windows. SEH is in the foundations of Windows programming.
 
 I have made [this little project](https://github.com/DBJDBJ/kernel_ms_stl) to approve or disapprove your doubts. Also on the official side, things are happening around this issue:
 
