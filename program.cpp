@@ -8,9 +8,18 @@ Kernel switch, what is that?
 #include "nanoclib/nanoclib.h"
 #include "use_cases/canary.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+#if _HAS_EXCEPTIONS
+#include "use_cases/standard_try_throw_catch.h"
+#endif // _HAS_EXCEPTIONS
+
+#if ! _HAS_EXCEPTIONS
+#include "use_cases/seh_ms_stl.h"
+#endif // ! _HAS_EXCEPTIONS
+
+
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <time.h>
 
 // user code start here
 // this is called from framework
@@ -19,6 +28,13 @@ extern "C" int program (int argc , char ** argv )
 {
 // problem: this instance dtor is not visited
 volatile canary in_the_abadon(__FILE__, __LINE__ ) ;
+#if _HAS_EXCEPTIONS
+standard_try_throw_catch();
+#endif // _HAS_EXCEPTIONS
+
+#if ! _HAS_EXCEPTIONS
+seh_ms_stl();
+#endif // ! _HAS_EXCEPTIONS
 
   return 0;
 }

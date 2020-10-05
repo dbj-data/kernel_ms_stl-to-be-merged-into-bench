@@ -10,7 +10,6 @@
 #include <vector>
 #include <stdexcept>
 
-
 inline void standard_try_throw_catch ()
 {
     try
