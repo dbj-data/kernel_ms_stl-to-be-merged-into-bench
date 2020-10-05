@@ -40,9 +40,14 @@ void my_handler() noexcept
 // so they appear as not optional?
 // but. it seems CL will always compile and linker will link
 // with or without these in any kind of C++ builds
+#ifdef _DEBUG
+#define DBJ_FOLLOWS_KERNEL_ADVICE
+#else // _DEBUG
 #undef DBJ_FOLLOWS_KERNEL_ADVICE
+#endif // ! _DEBUG
+
+// optional?
 #ifdef DBJ_FOLLOWS_KERNEL_ADVICE
-// optional
 #ifdef __cpp_aligned_new
 namespace my {  enum class align_val_t : size_t {}; }
 #endif // __cpp_aligned_new

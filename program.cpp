@@ -26,8 +26,7 @@ Kernel switch, what is that?
 // framework is where SE handling is implemented
 extern "C" int program (int argc , char ** argv ) 
 {
-// problem: this instance dtor is not visited
-volatile canary in_the_abadon(__FILE__, __LINE__ ) ;
+
 #if _HAS_EXCEPTIONS
 standard_try_throw_catch();
 #endif // _HAS_EXCEPTIONS
