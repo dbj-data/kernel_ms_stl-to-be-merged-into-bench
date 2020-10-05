@@ -6,9 +6,10 @@
             "label": "DEBUG_KERNEL",
             "command": "cl.exe",
             "args": [
+                "/std:c++17",
                 "/MDd",
                 "/D_DEBUG",
-                "/EH",
+                "/kernel",
                 "/Zi",
                 "/Fe:",
                 "${workspaceFolder}\\kernel_dbj_dbg.exe",
@@ -29,6 +30,7 @@
             "label": "RELEASE_BUILD",
             "command": "cl.exe",
             "args": [
+                "/std:c++17",
                 "/MD",
                 "/DNDEBUG",
                 "/kernel",
