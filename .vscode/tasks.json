@@ -6,6 +6,7 @@
             "label": "DEBUG_KERNEL",
             "command": "cl.exe",
             "args": [
+                "/GR-",
                 "/std:c++17",
                 "/MDd",
                 "/D_DEBUG",
@@ -30,6 +31,7 @@
             "label": "RELEASE_BUILD",
             "command": "cl.exe",
             "args": [
+                "/GR-",
                 "/std:c++17",
                 "/MD",
                 "/DNDEBUG",

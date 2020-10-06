@@ -51,9 +51,9 @@ void my_handler() noexcept
 #ifdef __cpp_aligned_new
 namespace my {  enum class align_val_t : size_t {}; }
 #endif // __cpp_aligned_new
-inline void* operator new  ( size_t count ){  return calloc(1, count) ;}
+inline void* operator new  ( size_t count ) noexcept {  return calloc(1, count) ;}
 #ifdef __cpp_aligned_new
-inline void* operator new  ( size_t count, my::align_val_t al ) { return calloc(1, count) ; }
+inline void* operator new  ( size_t count, my::align_val_t al )  noexcept { return calloc(1, count) ; }
 #endif
 inline void operator delete  ( void* ptr ) noexcept { free(ptr); }
 #ifdef __cpp_aligned_new
@@ -88,7 +88,7 @@ extern "C" static int dbj_main (int argc, char ** argv)
                 program(argc,argv);
         }
         __finally {
-            DBJ_INFO( DBJ_APP_NAME ":  __finally block visited");
+            DBJ_INFO(  ":  __finally block visited");
         }
     }
     __except ( 
@@ -98,20 +98,45 @@ extern "C" static int dbj_main (int argc, char ** argv)
     { 
         // MS STL "throws" are raised SE's under /kernel builds
         // caught here and nowhere else in the app
-         DBJ_ERROR( DBJ_APP_NAME ": SEH Exception caught");
+         DBJ_ERROR(  ": SEH Exception caught");
         
-        DBJ_WARN( DBJ_APP_NAME ": %s", 
+        DBJ_WARN(  ": %s", 
 ( dump_last_run.finished_ok == TRUE ? "minidump creation succeeded" : "minidump creation failed" ) 
         );
 
         if ( dump_last_run.finished_ok ) {
-            DBJ_INFO( DBJ_APP_NAME ": Dump folder: %s", dump_last_run.dump_folder_name );
-            DBJ_INFO( DBJ_APP_NAME ": Dump file  : %s", dump_last_run.dump_file_name);
+            DBJ_INFO(  ": Dump folder: %s", dump_last_run.dump_folder_name );
+            DBJ_INFO(  ": Dump file  : %s", dump_last_run.dump_file_name);
         }
-         DBJ_INFO( DBJ_APP_NAME ": Open that minidump in Visual Studio...");
+    }
 
-    } 
-        DBJ_INFO( DBJ_APP_NAME ": " DBJ_APP_VERSION );
-        DBJ_INFO( DBJ_APP_NAME ": Leaving...");
+#ifdef _KERNEL_MODE
+DBJ_INFO(  ": _KERNEL_MODE is defined");
+#else // ! _KERNEL_MODE
+DBJ_INFO(  ": _KERNEL_MODE is NOT defined");
+#endif // !_KERNEL_MODE
+
+
+#if _HAS_EXCEPTIONS
+DBJ_INFO(  ": _HAS_EXCEPTIONS == 1");
+#else
+DBJ_INFO(  ": _HAS_EXCEPTIONS == 0");
+#endif // _HAS_EXCEPTIONS
+
+#if _CPPRTTI 
+DBJ_INFO(  ": _CPPRTTI == 1");
+#else
+DBJ_INFO(  ": _CPPRTTI == 0");
+#endif // ! _CPPRTTI
+
+#if _CPPUNWIND 
+DBJ_INFO(  ": _CPPUNWIND == 1");
+#else // ! _CPPUNWIND 
+DBJ_INFO(  ": _CPPUNWIND == 0");
+#endif //! _CPPUNWIND 
+
+        DBJ_INFO( ": " DBJ_APP_NAME " " DBJ_APP_VERSION );
+        DBJ_INFO(  " ...Leaving... ");
+
         return 42;
 } // main
