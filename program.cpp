@@ -16,16 +16,18 @@ Kernel switch, what is that?
 #include "use_cases/seh_ms_stl.h"
 #endif // ! _HAS_EXCEPTIONS
 
-
-// #include <stdlib.h>
-// #include <stdio.h>
-// #include <time.h>
+#ifdef SAMPLE_COMDEF_KERNEL_COMBO
+#include "use_cases/comdef_kernel_combo.h"
+#endif // SAMPLE_COMDEF_KERNEL_COMBO
 
 // user code start here
 // this is called from framework
 // framework is where SE handling is implemented
 extern "C" int program (int argc , char ** argv ) 
 {
+#ifdef SAMPLE_COMDEF_KERNEL_COMBO
+comdef_kernel_combo();
+#endif // SAMPLE_COMDEF_KERNEL_COMBO
 
 #if _HAS_EXCEPTIONS
 standard_try_throw_catch();

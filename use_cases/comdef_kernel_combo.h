@@ -12,7 +12,7 @@
 
 inline void comdef_kernel_combo()
 {
-    #ifdef _HAS_EXCEPTIONS
+#if _HAS_EXCEPTIONS
   try {
 #endif // _HAS_EXCEPTIONS
 
@@ -34,7 +34,7 @@ cl	/DNDEBUG /kernel /Fe: .\kerneldbj.exe program.cpp  fwk\main.cpp  pseudo_rando
 
 Thus there is no /HE beside compiler intrinsic /HE
 */          
-#ifdef _HAS_EXCEPTIONS
+#if _HAS_EXCEPTIONS
   }
   catch ( _com_error const & comer_ ) { 
     const TCHAR * wm_ = comer_.ErrorMessage() ;
