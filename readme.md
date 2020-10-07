@@ -420,7 +420,7 @@ Pleas do not rely on `<comdef.h>` "SEH builds" combination until further notice.
 
 My opinion? MSFT ["Compiler COM Support"](https://docs.microsoft.com/en-us/cpp/cpp/compiler-com-support?redirectedfrom=MSDN&view=vs-2019) I do like, it is C++, it is simple and it "just works". But thesem halcion days of ISO C++, somebody has decided \<comdef.h> and friends will firmly stay inside c++ exceptions territory. Which is weird since all of the MS STL does switch easily to SEH builds from C++ exceptions.
 
-Easily but not transparently, since in the SEH build, keywords `try`,`throw` and `catch` do not compile.
+Easily but not transparently, since in the [SEH build](#sehbuild), keywords `try`,`throw` and `catch` do not compile.
 
 ## 1.3. Conclusion(s)
 
