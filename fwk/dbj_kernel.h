@@ -77,7 +77,7 @@ Although this function bellow works always. With or without
 SEH buils. As SEH is intrinsic to Windows.
 
 */
-extern "C" static int dbj_main (int argc, char ** argv) 
+extern "C" inline int dbj_main (int argc, char ** argv) 
 {
      __try 
     { 

@@ -49,7 +49,7 @@ typedef struct generate_dump_last_run {
 } generate_dump_last_run;
 
 static generate_dump_last_run dump_last_run ;
-static generate_dump_last_run dump_last_run_clean = { 0, 0, FALSE } ;
+static generate_dump_last_run dump_last_run_clean = { {0}, {0}, FALSE } ;
 
 /*
 DBJ: warning, currently this is a blocking call to an expensive function
