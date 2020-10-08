@@ -1,4 +1,6 @@
 ::
+:: dbj: currently does compile, does not link
+::
 :: USE clang-cl
 ::
 @cls
@@ -23,11 +25,17 @@
 ::  /Oi                     Enable use of builtin functions
 ::  /Ox                     Deprecated (like /Og /Oi /Ot /Oy /Ob2); use /O2
 ::
-set LNKR=/link /MACHINE:X64 /NXCOMPAT /SUBSYSTEM:CONSOLE /OPT:ICF /OPT:REF /INCREMENTAL:NO
+:: LNKR is probably useles
+::
+:: C:\Users\dusan\AppData\Local\Temp\program-23a601.obj : 
+:: fatal error LNK1112: module machine type 'x86' conflicts  with target machine type 'x64'
+:: clang-cl: error: linker command failed with exit code 1112 (use -v to see invocation)
+::
+set LNKR=/link /MACHINE:X64 /NXCOMPAT /SUBSYSTEM:CONSOLE /OPT:ICF /OPT:REF /INCREMENTAL:NO /DYNAMICBASE "kernel32.lib" "user32.lib" "gdi32.lib" "winspool.lib" "comdlg32.lib" "advapi32.lib" "shell32.lib" "ole32.lib" "oleaut32.lib" "uuid.lib" "odbc32.lib" "odbccp32.lib" 
 ::
 :: release build
 :: /Fa"Release\" /Fo"Release\" 
-@set SWITCHES=/WX- /Gd /Oi /MD /nologo /GR- /permissive- /std:c++17 /GS /W3 /Gy /O2 /fp:precise /D "_CRT_SECURE_NO_WARNINGS" /D "NDEBUG" /D "_CONSOLE" /D "_UNICODE" /D "UNICODE" /D "_HAS_EXCEPTIONS=0"  /DYNAMICBASE "kernel32.lib" "user32.lib" "gdi32.lib" "winspool.lib" "comdlg32.lib" "advapi32.lib" "shell32.lib" "ole32.lib" "oleaut32.lib" "uuid.lib" "odbc32.lib" "odbccp32.lib" 
+@set SWITCHES=/WX- /Gd /Oi /MD /nologo /GR- /permissive- /std:c++17 /GS /W3 /Gy /O2 /fp:precise /D "_CRT_SECURE_NO_WARNINGS" /D "NDEBUG" /D "_CONSOLE" /D "_UNICODE" /D "UNICODE" /D "_HAS_EXCEPTIONS=0"  
 ::
 :: compile
 ::
