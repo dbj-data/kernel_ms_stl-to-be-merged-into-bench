@@ -98,7 +98,7 @@ extern "C" inline int dbj_main (int argc, char ** argv)
     { 
         // MS STL "throws" are raised SE's under /kernel builds
         // caught here and nowhere else in the app
-         DBJ_ERROR(  ": SEH Exception caught");
+         DBJ_ERROR(  ": Structured Exception caught");
         
         DBJ_WARN(  ": %s", 
 ( dump_last_run.finished_ok == TRUE ? "minidump creation succeeded" : "minidump creation failed" ) 

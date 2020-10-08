@@ -20,11 +20,25 @@ Kernel switch, what is that?
 #include "use_cases/comdef_kernel_combo.h"
 #endif // SAMPLE_COMDEF_KERNEL_COMBO
 
+#define DBJ_WIN_ERR_SAMPLE
+#ifdef DBJ_WIN_ERR_SAMPLE
+#include "infrastructure/winerr_dbj.h"
+#endif // DBJ_WIN_ERR_SAMPLE
+
 // user code start here
 // this is called from framework
 // framework is where SE handling is implemented
 extern "C" int program (int argc , char ** argv ) 
 {
+
+#if ! _HAS_EXCEPTIONS
+seh_ms_stl();
+#endif // ! _HAS_EXCEPTIONS
+
+#ifdef DBJ_WIN_ERR_SAMPLE
+dbj::_win_raise_error (CO_E_SERVER_START_TIMEOUT);
+#endif // DBJ_WIN_ERR_SAMPLE
+
 #ifdef SAMPLE_COMDEF_KERNEL_COMBO
 comdef_kernel_combo();
 #endif // SAMPLE_COMDEF_KERNEL_COMBO
@@ -32,11 +46,6 @@ comdef_kernel_combo();
 #if _HAS_EXCEPTIONS
 standard_try_throw_catch();
 #endif // _HAS_EXCEPTIONS
-
-#if ! _HAS_EXCEPTIONS
-seh_ms_stl();
-#endif // ! _HAS_EXCEPTIONS
-
   return 0;
 }
 //--------------------------------------------------------------------------------------

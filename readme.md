@@ -296,21 +296,35 @@ And if we point back to our above `<yvalsh>` mentioning above, we shall understa
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #endif // _DEBUG
 ```
-Currently I am not 100% clear this is what is happening, but:
+Currently I am not 100% clear this is what is happening. I have not had enough time to make `_invoke_watson()` work. I think it is sage to assume that global pointer, used inside `_Raise()` method Does some work so that app does not just "disappear in thin air" like my feeble attempt currently does.
+
+```cpp
+    if (_STD _Raise_handler) {
+        (*_STD _Raise_handler)(*this); // call raise handler if present
+    }
+```
 
 #### 1.2.1.3. Use Watson instead? 
 
-And that is interesting, to put it mildly. For `_HAS_EXCEPTIONS == 0` scenario, MS STL on each SEH raised, actually calls [Dr Watson to do the job](https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/28725-use-watson-instead). Sherlock is nowhere to be seen.
+"Dr Watson" is coming [straight from Windows lore](https://devblogs.microsoft.com/oldnewthing/20051114-00/?p=33353). And possibility of using that in 2020 for MS STL is interesting, to put it mildly. For `_HAS_EXCEPTIONS == 0` scenario, MS STL on each SEH raised, (as it seems) actually calls [Dr Watson to do the job](https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/28725-use-watson-instead). Sherlock is nowhere to be seen. Reminder: `<yvals.h>` is part of MS STL open source.
 
-If really true, that is fine and OK as we have "come out on the other side" into the wonderful kingdom of Windows Drivers. Driver Technologies, Tools for Testing Drivers and namely this little known and peculiar office of "Windows Error Reporting"; to the inner circle known under the acronym of [WER](https://docs.microsoft.com/en-us/windows/win32/wer/windows-error-reporting).
+Ok then is it really true good doctor is called? Well, if I do native debugging on the core dump I create, I can see the source of the SE raised is indeed in `xthrow.cpp`. Dutifully reported as "Microsoft C++ exception". But not much elase. This I do not know was it Dr Watson called or not. I assume it was, since looking to the source we can see it supposedly being called from that `_Raise()` method.
 
-WER basically is that place from where you can call back to daddy and complain. 
+If really true, that is fine and OK as we have "come out on the other side" into the wonderful kingdom of Windows Drivers. Driver Technologies, Tools for Testing Drivers and namely this little known and peculiar old and cranky office of "Windows Error Reporting"; to the inner circle of Windows Elders, known under the acronym of [WER](https://docs.microsoft.com/en-us/windows/win32/wer/windows-error-reporting).
+
+[WER](https://en.wikipedia.org/wiki/Windows_Error_Reporting) is Windows Legacy. WER basically is that place from where you can call back to daddy and complain. 
 
 *"... enables users to notify Microsoft of application faults, kernel faults, unresponsive applications, and other application specific problems. Microsoft can use the error reporting feature to provide customers with troubleshooting information, solutions, or updates for their specific problems. Developers can use this infrastructure to receive information that can be used to improve their applications..."*
 
 But do not fret. We do not do that. 
 
-Windows as you know it today is actually Windows NT. And one of the foundation stones of Win NT are "Structured Exceptions" aka [SEH](https://en.wikipedia.org/wiki/Microsoft-specific_exception_handling_mechanisms#SEH).  If called, `_invoke_watson` simply raises the SE aka "Structured Exception". And what I do is I simply catch all, any and every SE on the application top level. Hint: `main()` is the good place.
+Windows as you know it today is actually Windows NT. And one of the foundation stones of Win NT are "Structured Exceptions" aka [SEH](https://en.wikipedia.org/wiki/Microsoft-specific_exception_handling_mechanisms#SEH).  If really called, `_invoke_watson` is a nop return function, it raises the SE aka "Structured Exception". Alternatively you can sober up and simply call
+
+```cpp
+// get around a good doctor
+RaiseException( YOUR_SE_UID , 0, 0, {});
+```
+What my main does is simply catch all, any and every SE on the application top level. Hint: `main()` is the good place for you.
 
 Ditto, in case of [SE caught](https://docs.microsoft.com/en-us/windows/win32/debug/using-an-exception-handler), what I do is create and save a minidump specific to my application. And looking into that minidump file with Visual Studio, I can pinpoint the issue that made the application misbehave. That includes every possible issue, not just C++ exceptions being thrown. 
 
