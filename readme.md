@@ -428,4 +428,4 @@ Many people are, but I am not that perturbed with MS STL apparent duality and ab
 
 Neither many projects are usurped too. Why not? Let me repeat the facts. Most of the customers are on Windows. WIN32 is primary Windows API. WIN32 is C. Same as UTF16 (`wchar_t`) is standard on windows, not `char`, or this '\\' is path delimiter and not this '/', in tha same manner, SEH is standard on Windows, not C++ exceptions.
 
-For Windows code, SEH is the OS norm. Embrace it.
+For Windows code, SEH is the norm. Embrace it.
