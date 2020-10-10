@@ -197,10 +197,8 @@ const wchar_t * what () const noexcept{
      return ErrorMessage() ;
 }
 
-#if _HAS_EXCEPTIONS == 0 
-
 // same design as MS STL std::exception 
-// when no exceptions
+// raises the SE
 __declspec(noreturn) void _Raise() {
 
 // NOTE: 
@@ -212,7 +210,6 @@ const ULONG_PTR * DBJ_SE_UID_PP = & DBJ_SE_UID ;
 
         RaiseException( E_FAIL , EXCEPTION_NONCONTINUABLE, 1, { DBJ_SE_UID_PP }) ;
 }
-#endif // _HAS_EXCEPTIONS == 0
 
 private:
     enum {
@@ -224,18 +221,15 @@ private:
 }; // _win_error
 
 // 
-inline void __declspec(noreturn) __stdcall _win_raise_error(HRESULT hr)
+inline void __declspec(noreturn) __stdcall _win_raise_error(HRESULT hr, const wchar_t * message = nullptr )
 {
-    static wchar_t * message = L"What is this message for?";
-
-     static size_t length = (message == nullptr) ? 0 : ::wcslen(message);
-
     /*
-    if _HAS_EXCEPTIONS == 0 _THROW compiles to x._Raise()
-    see yvals.h
+    if _HAS_EXCEPTIONS == 0 _THROW(x) compiles to x._Raise()
     */
-
+    if ( message ) 
     DBJ_THROW( _win_error(hr, message ) ) ;
+    else
+    DBJ_THROW( _win_error(hr) ) ;
 }
 
  inline bool is_win10 () noexcept
