@@ -13,8 +13,8 @@
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
-            "preLaunchTask": "DEBUG_KERNEL"
+            "externalConsole": true
+            // , "preLaunchTask": "DEBUG_KERNEL"
         }
     ]
 }

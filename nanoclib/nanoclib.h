@@ -161,6 +161,16 @@ to show us VT100 colours
 #undef  DBJ_ERROR
 #define DBJ_ERROR(...)  fprintf(stdout, VT100_FG_RED_BOLD ); fprintf(stderr, "\n"  __VA_ARGS__ ); fprintf(stdout, VT100_RESET ); 
 
+// all four above do stay in the RELEASE builds
+// but DBJ_DBG does not and DBJ_PRN does not
+#ifdef _DEBUG
+#define DBJ_DBG(F,X) DBJ_INFO("\n%s(%4d) %s : " F, __FILE__, __LINE__, #X, (X))
+#define DBJ_PRN(F,X) DBJ_INFO(F,X)
+#else // ! _DEBUG
+// just execute the expression fo not try to print it
+#define DBJ_DBG(F,X) (X)
+#define DBJ_PRN(F,X) 
+#endif // ! _DEBUG
 
 #ifdef __cplusplus
 } // extern "C" 

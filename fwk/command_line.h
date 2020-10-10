@@ -14,14 +14,14 @@ struct command_line final {
     
    command_line() = delete ;
 
-    // stay on the safe side,  copy from ** argv
+ 
     explicit command_line( int argc , char * const * const argv ) noexcept :
        argc_( argc - 1) ,
        prog_path( _strdup(argv[0]) ),
           prog_basename( command_line::base_name_(argv[0]) )     
     {
         DBJ_ASSERT(max_arg_count > argc);
-         
+            // stay on the safe side,  copy from ** argv
         for ( int k = 0; k < argc_ ; ++k ){
            args[k] = _strdup(argv[k+1] );
         }

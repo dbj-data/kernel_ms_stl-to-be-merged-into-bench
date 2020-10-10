@@ -26,6 +26,7 @@ NOTE: this is free of std lib but not free of comdef.h
 #include <comdef.h>
 #include <wchar.h>
 #include <yvals.h> // _RAISE and _THROW
+#include "dbj_version_helpers.h"
 
 #ifdef _COMDEF_NOT_WINAPI_FAMILY_DESKTOP_APP
 #pragma message("_COMDEF_NOT_WINAPI_FAMILY_DESKTOP_APP defined")
@@ -38,6 +39,18 @@ NOTE: this is free of std lib but not free of comdef.h
 #else
 #pragma message("_NATIVE_WCHAR_T_DEFINED NOT defined")
 #endif
+
+#if _HAS_EXCEPTIONS == 0 
+// coppied form yval.h
+#define DBJ_THROW(x) x._Raise()
+#ifdef _DEBUG
+#define DBJ_RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define DBJ_RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
+#endif // _DEBUG
+#else // _HAS_EXCEPTIONS != 0
+#define DBJ_THROW(x) throw x
+#endif // _HAS_EXCEPTIONS != 0
 
 
 namespace dbj {
@@ -186,15 +199,18 @@ const wchar_t * what () const noexcept{
 
 #if _HAS_EXCEPTIONS == 0 
 
-enum { DBJ_SE_UID = 0xff } ; 
 // same design as MS STL std::exception 
 // when no exceptions
-[[noreturn]] void _Raise() {
-     
-     // RaiseException( DBJ_SE_UID , 0, 0, {});
+__declspec(noreturn) void _Raise() {
 
-     // _invoke_watson makes the app "dissapear"
-    _RAISE( _win_error );
+// NOTE: 
+// basetsd.h
+// typedef _W64 unsigned long ULONG_PTR, *PULONG_PTR;
+// thus ULONG_PTR is not a pointer
+static ULONG_PTR DBJ_SE_UID = 0xff ; 
+const ULONG_PTR * DBJ_SE_UID_PP = & DBJ_SE_UID ;
+
+        RaiseException( E_FAIL , EXCEPTION_NONCONTINUABLE, 1, { DBJ_SE_UID_PP }) ;
 }
 #endif // _HAS_EXCEPTIONS == 0
 
@@ -219,7 +235,14 @@ inline void __declspec(noreturn) __stdcall _win_raise_error(HRESULT hr)
     see yvals.h
     */
 
-    _THROW( _win_error(hr, message ) ) ;
+    DBJ_THROW( _win_error(hr, message ) ) ;
+}
+
+ inline bool is_win10 () noexcept
+{
+    if (!IsWindows10OrGreater())
+       DBJ_THROW( _win_error( E_NOTIMPL, L"You need at least Windows 10. This version not supported") ) ;
+     return true ;
 }
 
 } // ns dbj

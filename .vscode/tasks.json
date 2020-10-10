@@ -26,7 +26,10 @@
             "problemMatcher": [
                 "$msCompile"
             ],
-            "group": "build"
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "type": "shell",

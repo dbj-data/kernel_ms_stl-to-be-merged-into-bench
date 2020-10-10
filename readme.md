@@ -296,39 +296,58 @@ And if we point back to our above `<yvalsh>` mentioning above, we shall understa
 #define _RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
 #endif // _DEBUG
 ```
-Currently I am not 100% clear this is what is happening. I have not had enough time to make `_invoke_watson()` work. I think it is sage to assume that global pointer, used inside `_Raise()` method Does some work so that app does not just "disappear in thin air" like my feeble attempt currently does.
+I think it is safe to assume that global pointer, used inside `_Raise()` method does the work
 
 ```cpp
     if (_STD _Raise_handler) {
         (*_STD _Raise_handler)(*this); // call raise handler if present
     }
 ```
+Why is that "safe to assume".
 
 #### 1.2.1.3. Use Watson instead? 
 
-"Dr Watson" is coming [straight from Windows lore](https://devblogs.microsoft.com/oldnewthing/20051114-00/?p=33353). And possibility of using that in 2020 for MS STL is interesting, to put it mildly. For `_HAS_EXCEPTIONS == 0` scenario, MS STL on each SEH raised, (as it seems) actually calls [Dr Watson to do the job](https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/28725-use-watson-instead). Sherlock is nowhere to be seen. Reminder: `<yvals.h>` is part of MS STL open source.
+Probably not; `_invoke_watson()` is an ancient API. Nowadays found in `corecrt.h`. It seems it is used for invalid parameter handling only that is what Visual Studio debugger says on calling it direct.
 
-Ok then is it really true good doctor is called? Well, if I do native debugging on the core dump I create, I can see the source of the SE raised is indeed in `xthrow.cpp`. Dutifully reported as "Microsoft C++ exception". But not much elase. This I do not know was it Dr Watson called or not. I assume it was, since looking to the source we can see it supposedly being called from that `_Raise()` method.
+"Dr Watson" is coming [straight from Windows lore](https://devblogs.microsoft.com/oldnewthing/20051114-00/?p=33353). And possibility of using that in 2020 for MS STL is interesting, to put it mildly. But unlikely. 
 
-If really true, that is fine and OK as we have "come out on the other side" into the wonderful kingdom of Windows Drivers. Driver Technologies, Tools for Testing Drivers and namely this little known and peculiar old and cranky office of "Windows Error Reporting"; to the inner circle of Windows Elders, known under the acronym of [WER](https://docs.microsoft.com/en-us/windows/win32/wer/windows-error-reporting).
+Ok then is it really true good doctor is called? Well, if I do native debugging on the core dump I create, I can see the source of the SE raised is indeed in `xthrow.cpp`. Dutifully reported as "Microsoft C++ exception". But not much elase. This I do not know was it Dr Watson called or not. I assume it was not, since looking to the source we can see it supposedly being called from that `_Raise()` method. But only as the third line of defence.
 
-[WER](https://en.wikipedia.org/wiki/Windows_Error_Reporting) is Windows Legacy. WER basically is that place from where you can call back to daddy and complain. 
+```cpp    
+// <exception> # 106
+[[noreturn]] void __CLR_OR_THIS_CALL _Raise() const 
+{ 
+    // this is very likely always used to raise SE
+    if (_STD _Raise_handler) {
+        (*_STD _Raise_handler)(*this); // call raise handler if present
+    }
+    // this is currently an empty protected method
+    _Doraise();
+    // this is _invoke_watson() whisc it seems is not supposed
+    // to be used here, and very likely it is not
+    _RAISE(*this); // raise this exception
+}
+```
+
+Once upon a time, Dr Watson was leading into the wonderful kingdom of this little known and peculiar office of "Windows Error Reporting"; to the inner circle of Windows Elders, known under the acronym of [WER](https://docs.microsoft.com/en-us/windows/win32/wer/windows-error-reporting).
+
+[WER](https://en.wikipedia.org/wiki/Windows_Error_Reporting) is Windows Legacy. WER basically was that place from where you can call back to daddy and complain. 
 
 *"... enables users to notify Microsoft of application faults, kernel faults, unresponsive applications, and other application specific problems. Microsoft can use the error reporting feature to provide customers with troubleshooting information, solutions, or updates for their specific problems. Developers can use this infrastructure to receive information that can be used to improve their applications..."*
 
-But do not fret. We do not do that. 
+That AFAIK is still in use but mostly in the twilight zone also called: "The Server Side". But do not fret. We do not do that. 
 
-Windows as you know it today is actually Windows NT. And one of the foundation stones of Win NT are "Structured Exceptions" aka [SEH](https://en.wikipedia.org/wiki/Microsoft-specific_exception_handling_mechanisms#SEH).  If really called, `_invoke_watson` is a nop return function, it raises the SE aka "Structured Exception". Alternatively you can sober up and simply call
+Windows as you know it today is actually Windows NT. And one of the foundation stones of Win NT are "Structured Exceptions" aka [SEH](https://en.wikipedia.org/wiki/Microsoft-specific_exception_handling_mechanisms#SEH).  Thus we can sober up and simply call
 
 ```cpp
 // get around a good doctor
-RaiseException( YOUR_SE_UID , 0, 0, {});
+RaiseException( YOUR_SE_UID , EXCEPTION_NONCONTINUABLE, 0, {});
 ```
 What my main does is simply catch all, any and every SE on the application top level. Hint: `main()` is the good place for you.
 
 Ditto, in case of [SE caught](https://docs.microsoft.com/en-us/windows/win32/debug/using-an-exception-handler), what I do is create and save a minidump specific to my application. And looking into that minidump file with Visual Studio, I can pinpoint the issue that made the application misbehave. That includes every possible issue, not just C++ exceptions being thrown. 
 
-And that is very powerful. 
+*And that is very powerful*. I invite you to study, starting from my `dbj_kernel.h`, in this repo.
 
 I simply have this standard SE aware main in each and every of my WIN apps. That is **not** very complicated and has a lot of benefits. 
 
@@ -357,23 +376,14 @@ struct error final
     { /* here make the message by the code */ }
     constants::error_type code() const {  return err_ ;    }
 
-#ifndef MY_RAISE 
-#ifdef _DEBUG
-#define MY_RAISE(x) _invoke_watson(_CRT_WIDE(#x), __FUNCTIONW__, __FILEW__, __LINE__, 0)
-#else // _DEBUG
-#define MY_RAISE(x) _invoke_watson(nullptr, nullptr, nullptr, 0, 0)
-#endif // _DEBUG    
-#endif // !  DBJ_RAISE
-
     // we raise the SEH from here
-    // and through calling _invoke_watson
     [[noreturn]] void raise() const { 
-        DBJ_RAISE(*this) ;
+        RaiseException( YOUR_SE_UID , EXCEPTION_NONCONTINUABLE , 0, {});
     }
 
 } ; // eof error
 ```
-We will always use the `MY_THROW` macro
+You can enjoy reading about [`RaiseException`](https://docs.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-raiseexception) if you wish to pass your details and such. Going further. We will always use the `MY_THROW` macro
 ```cpp
 #if _HAS_EXCEPTIONS == 0
       MY_THROW(x) x.raise() ;
@@ -381,7 +391,7 @@ We will always use the `MY_THROW` macro
       MY_THROW(x) throw x ;
 #endif
 ```
-Lastly, there is always a function that does the raise, and does not return. A level of indirection to improve the change-ability of the design always exist:
+That is where we flip/flop between SEH and C++ unwinding. Lastly, there is always a function that does the raise, and does not return. A level of indirection to improve the change-ability of the design always exist:
 ```cpp
 [[noreturn]] inline void __cdecl 
     error_throw (const constants::error_type code_) 
@@ -390,9 +400,7 @@ Lastly, there is always a function that does the raise, and does not return. A l
     }
 } // eof my ns
 ```
-WARNING: I am not yet 100% sure that will work. I am not able to follow that path while inside MS STL with a debugger.
-
-But in any case and always. To enjoy the SEH benefits, your Windows main should always be "SEH enabled", and look something like this:
+In any case and always. To enjoy the SEH benefits, your Windows main should always be "SEH enabled", and it has to look something like this:
 ```cpp
 // The "Standard" main()
 // this works in all kinds of Windows builds
@@ -407,14 +415,24 @@ extern "C" int main (int argc, char ** argv)
             // will be always visited
         }
     }
-    __except ( 1 /* 1 == EXCEPTION_EXECUTE_HANDLER */ ) 
+    __except ( EXCEPTION_EXECUTE_HANDLER ) 
     { 
+/*
+aleternatively:
+    DWORD exception_code_{};
+     . . .
+__except (exception_code_ = GetExceptionCode(), EXCEPTION_EXECUTE_HANDLER )
+     . . .
+     use that code to process specific SE's
+*/        
         // your code here
     }
     return 0 ;
 }
 ```
 That will always work c++ exception or no C++ exceptions. In case you want C++ exceptions you can not mix that in the same function, so you just call some entry point function, into your standard C++ app from the `main()` above.
+
+You next level of mastership up, is to learn aobut and use [`GetExceptionInformation`](https://docs.microsoft.com/en-us/windows/win32/debug/getexceptioninformation). A macro which is noting less than a real keyword in the CL compiler.
 
 Ditto. If you build with `/EHsc` your app will be: c++ exceptions **and** SEH enabled. SEH intrinsics are **always** enbaled, and are in `<excpt.h>`
 
