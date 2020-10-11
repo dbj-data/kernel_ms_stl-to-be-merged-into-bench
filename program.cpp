@@ -20,16 +20,26 @@ Kernel switch, what is that?
 #include "use_cases/comdef_kernel_combo.h"
 #endif // SAMPLE_COMDEF_KERNEL_COMBO
 
-#define DBJ_WIN_ERR_SAMPLE
+// #define DBJ_WIN_ERR_SAMPLE
 #ifdef DBJ_WIN_ERR_SAMPLE
 #include "infrastructure/winerr_dbj.h"
 #endif // DBJ_WIN_ERR_SAMPLE
+
+#define DBJ_TUF_SAMPLING
+#ifdef DBJ_TUF_SAMPLING
+#include "TUF\tuf.h"
+#endif // DBJ_TUF_SAMPLING
+
 
 // user code start here
 // this is called from framework
 // framework is where SE handling is implemented
 extern "C" int program (int argc , char ** argv ) 
 {
+
+#ifdef DBJ_TUF_SAMPLING
+return test_tuf(argc,argv);
+#endif // DBJ_TUF_SAMPLING
 
 #if ! _HAS_EXCEPTIONS
 // seh_ms_stl();

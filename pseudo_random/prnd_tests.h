@@ -1,6 +1,6 @@
 #pragma once
 /*
-(c) 2020 by dbj@dbj.org -- LICENSE_DBJ
+(c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj
 
 Just some shenanigans to provide for some rudimentary performance 
 testing on the future ROADMAP
