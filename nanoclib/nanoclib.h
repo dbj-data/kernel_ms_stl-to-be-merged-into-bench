@@ -100,7 +100,7 @@ if (ferror(FP_) != 0) {\
 
 #define DBJ_VERIFY_(x, file, line) \
 	if (false == x)                \
-	::dbj::dbj_nanoc_terror("Expression: " #x ", failed ", file, line)
+	dbj_nanoc_terror("Expression: " #x ", failed ", file, line)
 
 #define DBJ_VERIFY(x) DBJ_VERIFY_(x, __FILE__, __LINE__)
 
@@ -122,31 +122,6 @@ timestamp included
 #undef  DBJ_ERR_PROMPT
 #define DBJ_ERR_PROMPT(MSG_) DBJ_FILE_LINE_TSTAMP MSG_
 
-
-// -----------------------------------------------------------------------------
-/*
-dbj_nanoc_terror == terminating error
-NOTE: std::exit *is* different to C API exit()
-NOTE: all the bets are of so no point of using some logging
-*/
-	inline void dbj_nanoc_terror(const char* msg_, const char* file_, const int line_ )
-	{
-		/// DBJ_ASSERT(msg_ && file_ && line_);
-		/// all the bets are of so no point of using some logging
-		perror("\n\n" DBJ_ERR_PROMPT("\n\ndbj NANOC Terminating error!") );
-		exit(EXIT_FAILURE);
-	}
-
-/*
-2020 SEP 03 -- it turns out (again) we need to initialize WIN10 terminal
-to show us VT100 colours
-*/
-	inline void dbj_nanoc_win_vt100_initor_ () {
-        // and ... this is it ... really
-        // ps: make sure it is not empty string!
-        system(" "); 
-	}
-
 // -----------------------------------------------------------------------------
 // redirect stderr to a file if required
 #undef  DBJ_PRINT
@@ -161,16 +136,44 @@ to show us VT100 colours
 #undef  DBJ_ERROR
 #define DBJ_ERROR(...)  fprintf(stdout, VT100_FG_RED_BOLD ); fprintf(stderr, "\n"  __VA_ARGS__ ); fprintf(stdout, VT100_RESET ); 
 
+
+#undef DBJ_DBG
 // all four above do stay in the RELEASE builds
-// but DBJ_DBG does not and DBJ_PRN does not
+// but DBJ_DBG does not 
 #ifdef _DEBUG
-#define DBJ_DBG(F,X) DBJ_INFO("\n%s(%4d) %s : " F, __FILE__, __LINE__, #X, (X))
-#define DBJ_PRN(F,X) DBJ_INFO(F,X)
+#define DBJ_DBG(F, ... ) DBJ_INFO("\n%s[%4d] %s : " F, __FILE__, __LINE__, #__VA_ARGS__, __VA_ARGS__ )
 #else // ! _DEBUG
-// just execute the expression fo not try to print it
+// just execute the expression do not try to print it
 #define DBJ_DBG(F,X) (X)
-#define DBJ_PRN(F,X) 
 #endif // ! _DEBUG
+
+// -----------------------------------------------------------------------------
+/*
+dbj_nanoc_terror == terminating error
+NOTE: std::exit *is* different to C API exit()
+NOTE: all the bets are of so no point of using some logging
+*/
+	inline void dbj_nanoc_terror(const char* msg_, const char* file_, const int line_ )
+	{
+		/// DBJ_ASSERT(msg_ && file_ && line_);
+		/// all the bets are of so no point of using some logging
+		perror("\n\n" DBJ_ERR_PROMPT("\n\ndbj NANOCLIB Terminating error!") );
+		exit(EXIT_FAILURE);
+	}
+
+/*
+2020 SEP 03 -- it turns out (again) we need to initialize WIN10 terminal
+to show us VT100 colours
+*/
+	inline void dbj_nanoc_win_vt100_initor_ () {
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)		
+        // and ... this is it ... really
+        // ps: make sure it is not empty string!
+        system(" "); 
+#else
+ // no op
+#endif
+	}
 
 #ifdef __cplusplus
 } // extern "C" 

@@ -7,7 +7,10 @@ VT100 ESC codes for coloring the WIN10 PRO console output
 full explanation:
 https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences?redirectedfrom=MSDN
 */
-// #define VT100_ESC "\x1b"
+
+#include <sdkddkver.h>
+
+#if (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
 #define VT100_CSI "\x1b["
 
 #define VT100_CLS VT100_CSI "2J"
@@ -36,5 +39,39 @@ https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequen
 #define VT100_BG_GREEN VT100_CSI "42m"
 #define VT100_BG_YELLOW VT100_CSI "43m"
 #define VT100_BG_BLUE VT100_CSI "44m"
+
+#else // ! (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
+// less than WIN10
+#define VT100_CSI ""
+
+#define VT100_CLS VT100_CSI " "
+#define VT100_RESET VT100_CSI " "
+#define VT100_BOLD_FG VT100_CSI " "
+#define VT100_ULINE VT100_CSI " "
+#define VT100_ULINE_OFF VT100_CSI " "
+#define VT100_COLOR_SWAP VT100_CSI " "
+
+#define VT100_FG_RED VT100_CSI " "
+#define VT100_FG_GREEN VT100_CSI " "
+#define VT100_FG_YELLOW VT100_CSI " "
+#define VT100_FG_BLUE VT100_CSI " "
+#define VT100_FG_CYAN VT100_CSI " "
+#define VT100_FG_WHITE VT100_CSI " "
+
+#define VT100_FG_RED_BOLD VT100_BOLD_FG VT100_FG_RED
+#define VT100_FG_GREEN_BOLD VT100_BOLD_FG VT100_FG_GREEN
+#define VT100_FG_YELLOW_BOLD VT100_BOLD_FG VT100_FG_YELLOW
+#define VT100_FG_BLUE_BOLD VT100_BOLD_FG VT100_FG_BLUE
+#define VT100_FG_CYAN_BOLD VT100_BOLD_FG VT100_FG_CYAN
+#define VT100_FG_WHITE_BOLD VT100_BOLD_FG VT100_FG_WHITE
+
+#define VT100_BG_BLACK VT100_CSI " "
+#define VT100_BG_RED VT100_CSI " "
+#define VT100_BG_GREEN VT100_CSI " "
+#define VT100_BG_YELLOW VT100_CSI " "
+#define VT100_BG_BLUE VT100_CSI " "
+
+
+#endif // ! (_WIN32_WINNT >= _WIN32_WINNT_WIN10)
 
 #endif // VT100_VT100WIN10_INCLUDED
