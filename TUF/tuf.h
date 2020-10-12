@@ -1,27 +1,22 @@
 #pragma once
 /* (c) 2020 by dbj@dbj.org -- LICENSE_DBJ -- https://dbj.org/license_dbj 
 
-test function is: `bool (*)(void);` thus must return true or false
+TUF : Test Unit Framework
+
+Test function is: `bool (*)(void);` thus it must return true or false
 
 TUF_REGISTRY_MAX_CAPACITY_DEFAULT is 0xFF aka 255
 if you do not provide TUF_REGISTRY_MAX_CAPACITY that will be used
 
 on exception thrown or SE raised everything stops
 
-NOTE: dtd lib not used, simplicity achieved but naivete not gained
+NOTE: std lib not used, simplicity achieved, naivete not gained
 
 */
 
 #include "../nanoclib/nanoclib.h"
 #include <assert.h>
 #include <stdio.h>
-
-#undef SX
-#ifdef _DEBUG
-#define SX(F, ...) printf("\n%s[%4d] %12s : " F, __FILE__, __LINE__, #__VA_ARGS__, __VA_ARGS__)
-#else
-#define SX(F,...)
-#endif
 
 #undef  TUF_REGISTRY_MAX_CAPACITY_DEFAULT
 #define TUF_REGISTRY_MAX_CAPACITY_DEFAULT 0xFFU
@@ -49,8 +44,8 @@ namespace dbj
         {
             struct name_fp final
             {
-                const char *name;
-                FP fp;
+                const char *name{};
+                FP fp{};
             }; // name_fp
 
             constexpr inline static unsigned fp_max_capacity = TUF_REGISTRY_MAX_CAPACITY;

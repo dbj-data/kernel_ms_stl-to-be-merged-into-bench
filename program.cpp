@@ -30,12 +30,21 @@ Kernel switch, what is that?
 #include "TUF\tuf.h"
 #endif // DBJ_TUF_SAMPLING
 
+#define DBJ_NBT_SAMPLING
+#ifdef DBJ_NBT_SAMPLING
+#include "infrastructure/dbj_nothing_but.h"
+#endif // DBJ_NBT_SAMPLING
+
 
 // user code start here
 // this is called from framework
 // framework is where SE handling is implemented
 extern "C" int program (int argc , char ** argv ) 
 {
+
+#ifdef DBJ_NBT_SAMPLING
+sample_nothing_but(argc,argv);
+#endif
 
 #ifdef DBJ_TUF_SAMPLING
 return test_tuf(argc,argv);

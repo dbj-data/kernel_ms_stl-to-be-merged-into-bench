@@ -13,11 +13,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef __clang__
 #pragma clang system_header
 #endif
@@ -26,6 +21,10 @@ extern "C" {
 #define DBJ_PURE_FUNCTION __attribute__((const))
 #else
 #define DBJ_PURE_FUNCTION 
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /// -------------------------------------------------------------------------------
@@ -124,6 +123,7 @@ timestamp included
 
 // -----------------------------------------------------------------------------
 // redirect stderr to a file if required
+// vt100 coluring goes to stdout
 #undef  DBJ_PRINT
 #define DBJ_PRINT(...) fprintf(stderr, __VA_ARGS__ )
 
@@ -137,15 +137,20 @@ timestamp included
 #define DBJ_ERROR(...)  fprintf(stdout, VT100_FG_RED_BOLD ); fprintf(stderr, "\n"  __VA_ARGS__ ); fprintf(stdout, VT100_RESET ); 
 
 
+#undef SX
 #undef DBJ_DBG
 // all four above do stay in the RELEASE builds
 // but DBJ_DBG does not 
 #ifdef _DEBUG
 #define DBJ_DBG(F, ... ) DBJ_INFO("\n%s[%4d] %s : " F, __FILE__, __LINE__, #__VA_ARGS__, __VA_ARGS__ )
+// Show eXpression
+#define SX(F, ...) printf("\n%s[%4d] %12s : " F, __FILE__, __LINE__, #__VA_ARGS__, __VA_ARGS__)
 #else // ! _DEBUG
 // just execute the expression do not try to print it
 #define DBJ_DBG(F,X) (X)
+#define SX(F,...)
 #endif // ! _DEBUG
+
 
 // -----------------------------------------------------------------------------
 /*
