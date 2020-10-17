@@ -1,7 +1,7 @@
 
 #pragma once
 #include "use_cases_macros.h"
-#include "../nanoclib/nanoclib.h"
+#include "../fwk/nanoclib.h"
 
 #ifndef SAMPLE_COMDEF_KERNEL_COMBO
 #error __FILE__ " required SAMPLE_COMDEF_KERNEL_COMBO to be defined"

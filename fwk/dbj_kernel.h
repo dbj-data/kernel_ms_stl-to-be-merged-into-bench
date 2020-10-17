@@ -5,8 +5,8 @@ whatever /kernel build needs or might need
 #include "meta.h"
 #include "command_line.h"
 #include "generate_dump.h"
-#include "../nanoclib/vt100.h"
-#include "../nanoclib/nanoclib.h"
+#include "vt100.h"
+#include "nanoclib.h"
 
 #include <stdio.h>
 #include <new>

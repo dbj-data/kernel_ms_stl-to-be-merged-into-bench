@@ -14,7 +14,7 @@ NOTE: std lib not used, simplicity achieved, naivete not gained
 
 */
 
-#include "../nanoclib/nanoclib.h"
+#include "../fwk/nanoclib.h"
 #include <assert.h>
 #include <stdio.h>
 

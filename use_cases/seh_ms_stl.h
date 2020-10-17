@@ -1,6 +1,6 @@
 #pragma once
 #include "use_cases_macros.h"
-#include "../nanoclib/nanoclib.h"
+#include "../fwk/nanoclib.h"
 
 #if _HAS_EXCEPTIONS
 #error this is for sampling SEH MS STL combo only

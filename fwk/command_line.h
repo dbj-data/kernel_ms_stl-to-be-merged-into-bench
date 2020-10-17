@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../nanoclib/nanoclib.h"
+#include "nanoclib.h"
 
 // --------------------------------------------------------------------------
 struct command_line final {
