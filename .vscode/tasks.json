@@ -3,22 +3,20 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "DEBUG_KERNEL",
+            "label": "DEBUG_BUILD",
             "command": "cl.exe",
             "args": [
-                "/Zc:wchar_t",
-                "/GR-",
                 "/std:c++17",
-                "/MDd",
-                "/D_DEBUG",
                 "/DUNICODE",
                 "/D_UNICODE",
-                "/kernel",
+                "/D_DEBUG",
                 "/Zi",
+                "/kernel",
+                "/MDd",
                 "/Fe:",
-                "${workspaceFolder}\\kernel_dbj_dbg.exe",
-                "${workspaceFolder}\\program.cpp",
-                "${workspaceFolder}\\fwk\\main.cpp"
+                "${workspaceFolder}\\${fileBasenameNoExtension}_dbg.exe",
+                "${file}",
+                "${workspaceFolder}\\program.cpp"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -26,28 +24,27 @@
             "problemMatcher": [
                 "$msCompile"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "group": "build",
+            "detail": "Active File Only"
         },
         {
             "type": "shell",
             "label": "RELEASE_BUILD",
             "command": "cl.exe",
             "args": [
-                "/Zc:wchar_t",
-                "/GR-",
                 "/std:c++17",
-                "/MD",
-                "/DNDEBUG",
+                "/GL",
+                "/GR-",
+                "/nologo",
                 "/DUNICODE",
                 "/D_UNICODE",
+                "/DNDEBUG",
                 "/kernel",
+                "/MD",
                 "/Fe:",
-                "${workspaceFolder}\\kernel_dbj.exe",
-                "${workspaceFolder}\\program.cpp",
-                "${workspaceFolder}\\fwk\\main.cpp"
+                "${workspaceFolder}\\${fileBasenameNoExtension}.exe",
+                "${file}",
+                "${workspaceFolder}\\program.cpp"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -55,10 +52,23 @@
             "problemMatcher": [
                 "$msCompile"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "group": "build",
+            "detail": "Active File Only"
+        },
+        {
+            "type": "shell",
+            "label": "CLEAN",
+            "command": "del /S /Q",
+            "args": [
+                "${workspaceFolder}\\*pdb",
+                "${workspaceFolder}\\*obj",
+                "${workspaceFolder}\\*ilk"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "detail": "Delete all, *pdb *obj and *ilk files"
         }
     ]
 }

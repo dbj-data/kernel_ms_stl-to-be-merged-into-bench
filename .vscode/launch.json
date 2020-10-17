@@ -5,16 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Build and debug active file",
+            "name": "main_dbg.exe",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\kernel_dbj_dbg.exe",
-            "args": ["one", "two", "three"],
+            "program": "${workspaceFolder}\\main_dbg.exe",
+            "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true
-            // , "preLaunchTask": "DEBUG_KERNEL"
+            "externalConsole": true,
         }
     ]
 }
