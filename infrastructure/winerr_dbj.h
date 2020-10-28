@@ -26,7 +26,6 @@ NOTE: this is free of std lib but not free of comdef.h
 #include <comdef.h>
 #include <wchar.h>
 #include <yvals.h> // _RAISE and _THROW
-#include "dbj_version_helpers.h"
 
 #ifdef _COMDEF_NOT_WINAPI_FAMILY_DESKTOP_APP
 #pragma message("_COMDEF_NOT_WINAPI_FAMILY_DESKTOP_APP defined")
