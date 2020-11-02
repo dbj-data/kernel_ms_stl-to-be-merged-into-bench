@@ -29,7 +29,7 @@ Since C++98 one can use standard C++ feature macros:
 
 <h3>&nbsp;</h3>
 
-WIN32 is C API. To achieve C compatibility on Windows builds we use CL predefined macros:
+Windows OS is written in C. WIN32 is C API. On Windows builds we use CL predefined macros:
 
 ```cpp
 // defined if /kernel switch is used
@@ -67,7 +67,9 @@ printf(  ": _CPPUNWIND == 0");
  && (  _CPPUNWIND == 0 )
 ```
 
-Please do remember `SEH_BUILD` is invented in here to simplify what we mean. SEH is always available and always in use by the Windows implementation.
+Please do remember `SEH_BUILD` is invented in here to simplify what we mean. 
+
+> SEH is always available to any Windows based code.
 
 **Windows no C++ exceptions build** -- is cl.exe C/C++ build without any `/EH` switch or with a famous `/kernel` switch. [SEH](https://docs.microsoft.com/en-us/cpp/cpp/structured-exception-handling-c-cpp?view=vs-2019) is intrinsic to Windows. SEH is in the foundations of Windows programming. RTTI can exist in that situation. 
 
