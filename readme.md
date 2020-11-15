@@ -82,13 +82,9 @@ My findings and thoughts are also in comment or snippets in the samples. What is
 
 ## 1.1. Usage
 
-Of course this is strictly Windows code. And [this is **VS Code** project](https://github.com/DBJDBJ/kernel_ms_stl). If you are reading this, it is safe to assume you know how to use VS Code to do C++ builds. Thus you will know how to adjust the `.vscode` folder to your situation. There is also clean.cmd; hint: it clears the [cruft](https://en.wikipedia.org/wiki/Cruft#:~:text=Cruft%20is%20a%20jargon%20word,dysfunctional%20elements%20in%20computer%20software.) left after the builds.
+Of course this is strictly Windows code. If SEH exception is raised, it is caught and new "minidump" dmp file is created. You are informed where is it saved; what is the full path. Since SEH is intrinsic to Windows and CL.exe, that always works and catches all potential SE's.
 
-You can put your own code in the `program.cpp`. Function `extern "C" int program (int argc , char ** argv )` is where the user code starts. It is called from a micro framework where the full SEH handling is implemented.
-
-If SEH exception is raised that is caught inside `dbj_main`, and new "minidump" dmp file is created. You are informed where is it saved; what is the full path. Since SEH is intrinsic to Windows and CL.exe, that `dbj_main` always works and catches all potential SE's.
-
-To open that file you need **Visual Studio**. After which [in the upper right corner](https://docs.microsoft.com/en-us/visualstudio/debugger/using-dump-files?view=vs-2019), you will spot the link to the native debugging entitled ["Debug With Native Only"](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019). Click on that and soon you will be pushed to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
+To open that minidump file you need **Visual Studio**. After which [in the upper right corner](https://docs.microsoft.com/en-us/visualstudio/debugger/using-dump-files?view=vs-2019), you will spot the link to the native debugging entitled ["Debug With Native Only"](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019). Click on that and soon you will be pushed to the point where the actual C++ or SEH exception was thrown from. Thus you need Visual Studio too.
 
 ![vstudio_minidump_dialogue](https://docs.microsoft.com/en-us/visualstudio/debugger/media/dbg_dump_summarypage.png?view=vs-2019)
 
@@ -98,7 +94,7 @@ Generating minidump is one very powerful feature. Almost all of[ my/our Windows 
 
 **Standard and SEH**
 
-Standard C++ does not mention SEH, Windows or otherwise. It seems (at least to me) author of C++ (one Mr B. Stroustrup) has expressed explicit dislike for MSFT SEH, in this very recent paper: [P1947R0]( 
+Standard C++ specification does not mention SEH, or Windows. It seems (at least to me) author of C++ (one Mr B. Stroustrup) has expressed explicit dislike for MSFT SEH, in this very recent paper: [P1947R0]( 
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1947r0.pdf). 
 
 My opinion: There is a **lot** of customers who are "windows only" and a lot of projects serving them. Especially those needing low level Windows "server side" high performance components. In that situation one has to do as Windows demands.
